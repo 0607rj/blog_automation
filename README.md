@@ -1,150 +1,90 @@
-# 🤖 BlogAgent AI — AI-Powered Blog Automation System
+# 🖋️ The Manuscript — AI-Powered Personal Publication
 
-A full-stack AI agent that generates blog posts using **OpenAI GPT-4o-mini** and automatically saves them to **MongoDB** — zero manual steps.
+A sophisticated, minimalist blog automation system. This tool allows you to draft high-quality, human-like articles in seconds using **Groq (LLaMA 3.3)** and auto-archive them in **MongoDB**.
+
+![Design Preview](https://img.shields.io/badge/Design-Minimalist-stone)
+![Backend](https://img.shields.io/badge/Backend-Node.js-green)
+![AI](https://img.shields.io/badge/AI-Groq--LLaMA3-orange)
+![Database](https://img.shields.io/badge/Database-MongoDB--Atlas-brightgreen)
 
 ---
 
-## 📁 Folder Structure
+## ✨ Features
+
+- **Editorial Design**: A premium reading experience with high-end typography (`Crimson Pro` & `Plus Jakarta Sans`).
+- **Human-Like Writing**: Powered by Groq, generating simple, conversational, and honest content (400–500 words).
+- **Drafting Desk**: A distraction-free "New Post" interface with Title and Focus fields.
+- **Intelligent Auto-Tagging**: The AI automatically determines the best category (Culture, Tech, Life, etc.) for your post.
+- **Archive Search**: Real-time filtering to find your stories by title or content instantly.
+- **Automated Workflow**: Generate → Write → Categorize → Save. All in one click.
+
+---
+
+## 📁 Project Structure
 
 ```
 blog_automation/
 ├── backend/
-│   ├── agent/
-│   │   └── blogAgent.js       ← Core AI agent (generate → save → return)
-│   ├── config/
-│   │   └── db.js              ← MongoDB connection
-│   ├── models/
-│   │   └── Blog.js            ← Mongoose schema
-│   ├── routes/
-│   │   └── blogRoutes.js      ← Express routes
-│   ├── server.js              ← Entry point
-│   ├── package.json
-│   └── .env                   ← 🔑 Your secrets go here
+│   ├── agent/blogAgent.js       # Core AI logic (Human-tone prompt)
+│   ├── routes/blogRoutes.js     # API Endpoints
+│   ├── models/Blog.js           # Database Schema
+│   └── .env                     # Database & API Keys
 └── frontend/
     ├── src/
-    │   ├── components/
-    │   │   ├── BlogCard.jsx
-    │   │   └── GenerateForm.jsx
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css
-    ├── index.html
-    └── vite.config.js
+    │   ├── api.js               # Centralized API utility
+    │   ├── App.jsx              # Main Feed & Layout
+    │   └── components/
+    │       ├── BlogCard.jsx     # Editorial Card Design
+    │       └── GenerateForm.jsx # Minimalist Writing Desk
+    └── .env                     # Frontend Config
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## 🚀 Quick Start
 
-- **Node.js** v18+
-- **MongoDB** running locally (`mongod`) _or_ a [MongoDB Atlas](https://cloud.mongodb.com) URI
-- **OpenAI API Key** — [get one here](https://platform.openai.com/api-keys)
+### 1. Environment Setup
 
----
-
-## 🚀 Setup & Run
-
-### 1. Configure Environment Variables
-
-Open `backend/.env` and fill in your values:
-
+Create a `.env` file in the **backend** folder:
 ```env
 PORT=5000
-MONGO_URI=mongodb://localhost:27017/blog_automation
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+MONGO_URI=your_mongodb_atlas_uri
+GROQ_API_KEY=your_groq_api_key
 ```
 
-### 2. Start the Backend
+Create a `.env` file in the **frontend** folder:
+```env
+VITE_API_BASE_URL=http://localhost:5000
+```
 
+### 2. Launch Backend
 ```bash
 cd backend
-npm install       # only needed once
-npm run dev       # uses nodemon for hot-reload
-```
-
-The API will be available at **http://localhost:5000**
-
-### 3. Start the Frontend
-
-Open a **new terminal**:
-
-```bash
-cd frontend
-npm install       # only needed once
+npm install
 npm run dev
 ```
 
-The UI will be available at **http://localhost:3000**
-
----
-
-## 🔌 API Reference
-
-### `POST /api/generate-blog`
-
-Triggers the AI agent to generate and auto-save a blog post.
-
-**Request Body:**
-```json
-{ "category": "Technology" }
+### 3. Launch Frontend
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-
-**Response:**
-```json
-{
-  "success": true,
-  "blog": {
-    "_id": "...",
-    "title": "...",
-    "content": "...",
-    "summary": "...",
-    "category": "Technology",
-    "createdAt": "2026-05-04T..."
-  }
-}
-```
-
----
-
-### `GET /api/blogs`
-
-Returns all saved blogs, newest first.
-
-**Response:**
-```json
-{
-  "success": true,
-  "count": 5,
-  "blogs": [ ... ]
-}
-```
-
----
-
-## 🧠 How the Agent Works
-
-```
-User enters category
-       ↓
-POST /api/generate-blog
-       ↓
-blogAgent(category)
-   ├── Step 1: Call OpenAI GPT-4o-mini with structured prompt
-   ├── Step 2: Parse JSON response (title, content, summary)
-   └── Step 3: Auto-save to MongoDB → return saved document
-       ↓
-Frontend receives blog → immediately adds to UI list
-```
+*The app usually runs on [http://localhost:3000](http://localhost:3000) or [http://localhost:3002](http://localhost:3002).*
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer     | Technology              |
-|-----------|-------------------------|
-| Backend   | Node.js + Express       |
-| Database  | MongoDB + Mongoose      |
-| AI        | OpenAI GPT-4o-mini      |
-| Frontend  | React + Vite            |
-| Styling   | Tailwind CSS v4         |
-| HTTP      | Axios                   |
+- **Frontend**: React, Vite, Tailwind CSS v4.
+- **Backend**: Node.js, Express.
+- **Database**: MongoDB Atlas (Mongoose).
+- **Inference**: Groq SDK (LLaMA 3.3 70B).
+
+---
+
+## 🔒 Security
+Sensitive information like API keys and database strings are protected using `.env` files, which are listed in the `.gitignore` to prevent accidental public exposure.
+
+---
+*Created with focus on simplicity and elegance.*
