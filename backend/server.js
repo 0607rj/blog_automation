@@ -14,10 +14,11 @@ if (!process.env.GROQ_API_KEY) {
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: ["https://hello0123.netlify.app", "http://localhost:5173"],
+  origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+
 app.use(express.json());
 
 
