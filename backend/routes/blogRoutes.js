@@ -29,4 +29,17 @@ router.get("/blogs", async (req, res) => {
   }
 });
 
+// ─── PATCH /blogs/:id/rate ───────────────────────────────────────────────────
+router.patch("/blogs/:id/rate", async (req, res) => {
+  const { type } = req.body; // 'like' or 'dislike'
+  try {
+    const update = type === "like" ? { $inc: { likes: 1 } } : { $inc: { dislikes: 1 } };
+    const blog = await Blog.findByIdAndUpdate(req.params.id, update, { new: true });
+    return res.status(200).json({ success: true, blog });
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to update rating." });
+  }
+});
+
 module.exports = router;
+
