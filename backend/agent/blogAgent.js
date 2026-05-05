@@ -9,26 +9,36 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 async function blogAgent(category, description, userTitle) {
   console.log(`🤖 Agent processing request...`);
 
-  const prompt = `Write a blog post in SIMPLE, CONVERSATIONAL English. 
-Imagine you are a person talking to a friend. No "AI-speak," no complex words, no corporate jargon. Just plain, honest talk.
+  const prompt = `Write a long, detailed blog post using SIMPLE, HUMAN English. 
+Imagine you are a person sharing your thoughts with a friend. 
+NO fancy "AI words" (do not use words like 'tapestry', 'delve', 'moreover', 'testament', or 'unlock'). 
 
-Topic/Focus: ${description || "Something interesting"}
-${userTitle ? `The title MUST be: ${userTitle}` : "Come up with a very simple, catchy title."}
+Topic: ${description || "General Insights"}
+${userTitle ? `Title: ${userTitle}` : "Create a simple, catchy title."}
 
-Requirements:
-1. Tone: Human, relaxed, and straightforward. Use simple sentences.
-2. Length: 200–300 words.
-3. Summary: One or two short, simple sentences.
-4. Category: A single word (e.g. Life, Tech, Ideas).
+Structure:
+- Natural introduction.
+- 3-4 detailed paragraphs using plain English.
+- A bullet-point list of "Quick Points".
+- A simple conclusion.
 
-Return ONLY a valid JSON object. 
-DO NOT include any markdown code blocks or extra text.
-JSON Structure:
+Length: 300-400 words.
+Tone: Friendly, direct, and natural.
+
+
+
+OUTPUT RULES:
+- Return ONLY valid JSON.
+- DO NOT add any conversational text before or after the JSON.
+- Ensure the JSON is complete.
+
+
+JSON Format:
 {
-  "title": "the title here",
-  "content": "the simple content here",
-  "summary": "the short summary here",
-  "category": "the category here"
+  "title": "...",
+  "content": "...",
+  "summary": "...",
+  "category": "..."
 }`;
 
   const completion = await groq.chat.completions.create({
@@ -36,26 +46,37 @@ JSON Structure:
     messages: [
       {
         role: "system",
-        content: "You are a regular person writing a personal blog. You use simple words and a friendly tone. You only respond with JSON.",
+        content: "You are a professional editorial system. You output pure JSON data. Never include text outside of the JSON structure.",
       },
       { role: "user", content: prompt },
     ],
-    temperature: 0.8,
+    temperature: 0.85,
+    max_tokens: 4000,
   });
 
-  let rawText = completion.choices[0].message.content.trim();
-  console.log("📝 AI response received.");
 
-  // Clean up the response in case the AI added markdown backticks
-  rawText = rawText.replace(/^```json\n?/, "").replace(/\n?```$/, "");
+
+  let rawText = completion.choices[0].message.content.trim();
+  console.log("📝 AI raw response length:", rawText.length);
+  
+  // Aggressive JSON extraction: Find the first '{' and the last '}'
+  const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    console.error("❌ No JSON found in AI response. Raw:", rawText.substring(0, 500));
+    throw new Error("The system couldn't generate a valid article structure. Please try again.");
+  }
+  
+  const cleanedText = jsonMatch[0];
 
   let parsed;
   try {
-    parsed = JSON.parse(rawText);
+    parsed = JSON.parse(cleanedText);
   } catch (err) {
-    console.error("❌ Failed to parse AI JSON:", rawText);
-    throw new Error("The AI response was messy. Please try again.");
+    console.error("❌ Failed to parse AI JSON. Cleaned text preview:", cleanedText.substring(0, 200) + "...");
+    throw new Error("The editorial system had a formatting error. Please try again.");
   }
+
+
 
   const { title, content, summary, category: aiCategory } = parsed;
 
@@ -70,8 +91,9 @@ JSON Structure:
     content, 
     summary, 
     category: finalCategory, 
-    description 
+    description
   });
+
 
   await blog.save();
   console.log(`✅ Blog saved: ${blog.title}`);
