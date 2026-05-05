@@ -1,18 +1,34 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
 import api from "./api";
 import GenerateForm from "./components/GenerateForm";
 import BlogCard from "./components/BlogCard";
+import Home from "./components/Home";
+import BlogDetail from "./components/BlogDetail";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 export default function App() {
   const [blogs, setBlogs] = useState([]);
-  const [newestId, setNewestId] = useState(null);
   const [fetching, setFetching] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDrafting, setIsDrafting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
     fetchBlogs();
   }, []);
+
+  // ─── Categories logic ───
+  const categories = useMemo(() => {
+    const list = ["All", ...new Set(blogs.map(b => b.category))];
+    return list.filter(Boolean);
+  }, [blogs]);
 
   async function fetchBlogs() {
     try {
@@ -27,112 +43,134 @@ export default function App() {
   }
 
   function handleGenerated(newBlog) {
-    setNewestId(newBlog._id);
     setBlogs((prev) => [newBlog, ...prev]);
-    setIsDrafting(false); // Close the form after generation
-    setTimeout(() => setNewestId(null), 10000);
+    // Redirect logic is usually handled in the component or via navigate
   }
 
   const filteredBlogs = useMemo(() => {
-    if (!searchQuery.trim()) return blogs;
-    const query = searchQuery.toLowerCase();
-    return blogs.filter(b => 
-      b.title.toLowerCase().includes(query) ||
-      b.category.toLowerCase().includes(query) ||
-      b.content.toLowerCase().includes(query)
-    );
-  }, [blogs, searchQuery]);
+    let result = blogs;
+
+    // Filter by Search
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(b => 
+        b.title.toLowerCase().includes(query) ||
+        b.content.toLowerCase().includes(query)
+      );
+    }
+
+    // Filter by Category
+    if (selectedCategory !== "All") {
+      result = result.filter(b => b.category === selectedCategory);
+    }
+
+    return result;
+  }, [blogs, searchQuery, selectedCategory]);
 
   return (
-    <div className="min-h-screen pb-32">
-      {/* ── Simple Navigation ── */}
-      <nav className="fixed top-0 w-full bg-white/70 backdrop-blur-xl border-b border-stone-100 z-50 px-6 lg:px-12 h-16 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
-          My Personal Blog
-        </h1>
-        
-        <div className="flex items-center gap-6">
-          <div className="relative group hidden sm:block">
-            <input 
-              type="text" 
-              placeholder="Search posts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent border-b border-transparent focus:border-stone-300 text-sm py-1 outline-none w-32 focus:w-64 transition-all duration-500"
-            />
+    <Router>
+      <ScrollToTop />
+      <div className="min-h-screen bg-white">
+        {/* ── Fixed Navigation ── */}
+        <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-2xl border-b border-stone-100 z-50 px-6 lg:px-12 h-20 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-black tracking-tighter cursor-pointer">
+            The Manuscript<span className="text-stone-300">.</span>
+          </Link>
+          
+          <div className="flex items-center gap-8">
+            <Link to="/blogs" className="text-xs font-bold uppercase tracking-widest hover:text-stone-500 transition-colors hidden md:block">
+              Archive
+            </Link>
+            <Link 
+              to="/create"
+              className="text-xs font-bold uppercase tracking-widest bg-stone-900 text-white px-8 py-3 rounded-full hover:bg-stone-800 transition-all active:scale-95 shadow-xl"
+            >
+              Create Blog
+            </Link>
           </div>
-          <button 
-            onClick={() => setIsDrafting(!isDrafting)}
-            className="text-xs font-bold uppercase tracking-widest bg-stone-900 text-white px-5 py-2.5 rounded-full hover:bg-stone-800 transition-all active:scale-95 shadow-sm"
-          >
-            {isDrafting ? "Cancel" : "Create Blog"}
-          </button>
-        </div>
-      </nav>
+        </nav>
 
-      <main className="max-w-4xl mx-auto pt-40 px-6">
-        {/* ── New Blog Form ── */}
-        {isDrafting && (
-          <section className="mb-24 animate-fade-in">
-            <GenerateForm onGenerated={handleGenerated} />
-            <div className="mt-12 mb-20 border-b border-stone-100" />
-          </section>
-        )}
-
-        {/* ── Header ── */}
-        {!isDrafting && !searchQuery && (
-          <header className="mb-24 text-center">
-            <h2 className="text-5xl md:text-7xl font-bold leading-tight mb-6 serif">
-              Thoughts & <br/><span className="italic text-stone-400">ideas</span> written by AI.
-            </h2>
-          </header>
-        )}
-
-        {/* ── Search State ── */}
-        {searchQuery && (
-          <header className="mb-16">
-            <p className="text-sm uppercase tracking-[0.2em] text-stone-400 mb-2">Showing results for</p>
-            <h3 className="text-3xl font-bold serif">"{searchQuery}"</h3>
-          </header>
-        )}
-
-        {/* ── Blog Feed ── */}
-        <section className="space-y-32">
-          {fetching && blogs.length === 0 ? (
-            <div className="py-20 text-center">
-              <div className="inline-block animate-bounce mb-4 text-stone-300">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        {/* ── Main Content Area ── */}
+        <main className="pt-20">
+          
+          <Routes>
+            <Route path="/" element={<Home />} />
+            
+            <Route path="/create" element={
+              <div className="bg-stone-50 min-h-screen py-20 px-6">
+                <GenerateForm onGenerated={handleGenerated} />
               </div>
-              <p className="text-lg text-stone-400 animate-pulse serif">Loading your blog posts...</p>
-              
-              <div className="mt-12 space-y-24 max-w-2xl mx-auto text-left">
-                {[1, 2].map(i => (
-                  <div key={i} className="animate-pulse space-y-4 opacity-30">
-                    <div className="h-4 w-20 bg-stone-200 rounded" />
-                    <div className="h-10 w-3/4 bg-stone-200 rounded" />
-                    <div className="h-24 bg-stone-200 rounded" />
+            } />
+
+            <Route path="/blogs" element={
+
+              <div className="max-w-6xl mx-auto py-24 px-6">
+                <header className="mb-12 border-b border-stone-100 pb-12">
+                  <h2 className="text-5xl md:text-7xl font-bold serif mb-10">Archive</h2>
+                  
+                  {/* Category Pills (Medium Style) */}
+                  <div className="flex flex-wrap items-center gap-2 mb-10">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${
+                          selectedCategory === cat 
+                          ? "bg-stone-900 text-white shadow-lg scale-105" 
+                          : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
                   </div>
-                ))}
+
+                  <div className="flex items-center gap-4">
+                    <input 
+                      type="text" 
+                      placeholder="Search stories..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-transparent border-b border-stone-200 focus:border-stone-900 text-lg py-2 outline-none w-full max-w-md transition-all serif"
+                    />
+                  </div>
+                </header>
+
+
+                <div className="space-y-4">
+                  {fetching ? (
+                    <div className="py-20 text-center serif text-2xl text-stone-300 animate-pulse">
+                      Curating the collection...
+                    </div>
+                  ) : filteredBlogs.length === 0 ? (
+                    <div className="py-40 text-center serif text-2xl text-stone-300 italic">
+                      Nothing found in the archives.
+                    </div>
+                  ) : (
+                    filteredBlogs.map((blog) => (
+                      <BlogCard key={blog._id} blog={blog} />
+                    ))
+                  )}
+                </div>
               </div>
-            </div>
-          ) : filteredBlogs.length === 0 ? (
-            <div className="py-40 text-center">
-              <p className="serif text-2xl text-stone-300 italic">No posts found.</p>
-            </div>
-          ) : (
-            filteredBlogs.map((blog) => (
-              <BlogCard key={blog._id} blog={blog} isNew={blog._id === newestId} />
-            ))
-          )}
-        </section>
-      </main>
+            } />
 
-      <footer className="mt-40 py-20 border-t border-stone-100 text-center">
-        <p className="text-xs uppercase tracking-widest text-stone-300 font-bold">
-          © {new Date().getFullYear()} AI Blog Website
-        </p>
-      </footer>
-    </div>
+            <Route path="/blog/:id" element={<BlogDetail />} />
+          </Routes>
+        </main>
 
+        <footer className="mt-40 py-24 border-t border-stone-100 bg-stone-50 text-center">
+          <p className="text-xs uppercase tracking-[0.4em] text-stone-400 font-black mb-4">
+            The Manuscript Publication
+          </p>
+          <div className="flex justify-center gap-8 mb-12">
+            <Link to="/" className="text-xs font-bold text-stone-500 hover:text-stone-900">Home</Link>
+            <Link to="/blogs" className="text-xs font-bold text-stone-500 hover:text-stone-900">Archive</Link>
+            <a href="#" className="text-xs font-bold text-stone-500 hover:text-stone-900">About</a>
+          </div>
+          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} AI-Powered Editorial. All rights reserved.</p>
+        </footer>
+      </div>
+    </Router>
   );
 }
