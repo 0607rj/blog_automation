@@ -13,9 +13,10 @@ export default function BlogCard({ blog, isNew }) {
     <article className={`group animate-fade-in relative ${isNew ? 'bg-stone-50/50 -mx-4 px-4 py-8 rounded-2xl' : ''}`}>
       {isNew && (
         <span className="absolute -top-3 left-6 px-3 py-1 bg-stone-900 text-[10px] text-white font-bold uppercase tracking-widest rounded-full shadow-lg">
-          Recently Published
+          New Blog Post
         </span>
       )}
+
       
       <div className="flex items-center gap-4 mb-4">
         <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-stone-400">
