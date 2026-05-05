@@ -13,8 +13,13 @@ if (!process.env.GROQ_API_KEY) {
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+  origin: ["https://hello0123.netlify.app", "http://localhost:5173"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
+
 
 // ─── Connect to MongoDB ───────────────────────────────────────────────────────
 connectDB();
