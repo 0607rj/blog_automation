@@ -1,8 +1,13 @@
 # 🖋️ The Manuscript — AI-Powered Personal Publication
 
-A sophisticated, minimalist blog automation system. This tool allows you to draft high-quality, human-like articles in seconds using **Groq (LLaMA 3.3)** and auto-archive them in **MongoDB**.
+A sophisticated, minimalist blog automation system. 
+
+**🚀 Live Links:**
+- **Frontend (Netlify):** [https://hello0123.netlify.app/](https://hello0123.netlify.app/)
+- **Backend (Render):** [https://blog-automation-1-afvy.onrender.com](https://blog-automation-1-afvy.onrender.com)
 
 ![Design Preview](https://img.shields.io/badge/Design-Minimalist-stone)
+
 ![Backend](https://img.shields.io/badge/Backend-Node.js-green)
 ![AI](https://img.shields.io/badge/AI-Groq--LLaMA3-orange)
 ![Database](https://img.shields.io/badge/Database-MongoDB--Atlas-brightgreen)
