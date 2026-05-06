@@ -2,43 +2,42 @@ const Groq = require("groq-sdk");
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Ask the AI to write plain text with clear delimiters.
-// We build the JSON ourselves — so it can NEVER be malformed.
 async function blogAgent(category, description, userTitle, existingCategories = []) {
   console.log(`🤖 Agent processing request...`);
 
-  const categoriesText = existingCategories.length > 0 
+  const categoriesText = existingCategories.length > 0
     ? `Existing Categories: ${existingCategories.join(", ")}`
     : "Existing Categories: Technology, Health, Lifestyle, Business";
 
-  const prompt = `Write a blog post using the format below. 
-Fill in each section clearly. Use plain English. Keep it simple and friendly.
-
-${categoriesText}
-
----START CATEGORY---
-Pick the best category for this story. 
-- If it fits one of the "Existing Categories" above, USE THAT EXACT WORD. 
-- If it is a completely new topic, create a new one-word category name.
----END CATEGORY---
+  // ── IMPORTANT: Topic comes FIRST so the AI knows what it's writing about
+  // ── Category comes LAST so the AI can categorise AFTER reading the topic
+  const prompt = `Write a blog post using the format below. Fill in each section. Use plain English.
 
 TITLE: ${userTitle || "Write a good title for this topic"}
 
 TOPIC: ${description || "General Insights"}
 
 ---START CONTENT---
-Write 3-4 paragraphs here (300-350 words total). Use simple words.
+Write 3-4 paragraphs (300-350 words). Use simple words.
 Include a section called "Quick Points:" with 4-5 bullet points using "- " prefix.
 ---END CONTENT---
 
 ---START SUMMARY---
-Write 1-2 sentences that describe the article.
+Write 1-2 sentences describing the article.
 ---END SUMMARY---
 
 ---START TAGS---
-List 4-5 short keyword tags for this article, separated by commas. Example: React, JavaScript, Web Dev, Frontend
----END TAGS---`;
+List 4-5 short keyword tags, comma separated. Example: React, Web Dev, Frontend
+---END TAGS---
 
+${categoriesText}
+---START CATEGORY---
+Now that you have written the blog above, pick the single best category word for it.
+Rules:
+- If the topic matches one of the Existing Categories listed above, use THAT EXACT WORD.
+- If it is a new topic not in the list, invent ONE new short word for it (e.g. Cartoons, Banking, Romance).
+- Write ONLY the category word. Nothing else. No quotes. No punctuation.
+---END CATEGORY---`;
 
   try {
     const completion = await groq.chat.completions.create({
@@ -46,7 +45,7 @@ List 4-5 short keyword tags for this article, separated by commas. Example: Reac
       messages: [
         {
           role: "system",
-          content: "You are a helpful blog writer. Follow the format exactly.",
+          content: "You are a helpful blog writer. Follow the format exactly. Fill in every section between its markers.",
         },
         { role: "user", content: prompt },
       ],
@@ -59,7 +58,7 @@ List 4-5 short keyword tags for this article, separated by commas. Example: Reac
     // ─── Extract each section ───
     const extractBetween = (text, startMarker, endMarker) => {
       const start = text.indexOf(startMarker);
-      const end = text.indexOf(endMarker);
+      const end = text.indexOf(endMarker, start + startMarker.length);
       if (start === -1 || end === -1) return null;
       return text.substring(start + startMarker.length, end).trim();
     };
@@ -78,25 +77,7 @@ List 4-5 short keyword tags for this article, separated by commas. Example: Reac
     // Extract Summary
     const summary = extractBetween(raw, "---START SUMMARY---", "---END SUMMARY---") || "A professional read.";
 
-    // Extract Category (and clean it up aggressively)
-    const rawCategory = extractBetween(raw, "---START CATEGORY---", "---END CATEGORY---");
-    let finalCategory = "General";
-    if (rawCategory) {
-      // 1. Remove markdown stars, colons, and labels like "Category" or "Topic"
-      // 2. Remove any non-alphanumeric characters except spaces
-      // 3. Take the first line and trim it
-      finalCategory = rawCategory
-        .replace(/\*\*|__|\*|_/g, "") // Remove bold/italic markers
-        .replace(/category:|topic:|section:/gi, "") // Remove common labels
-        .split("\n")[0] // Take first line only
-        .replace(/[^a-zA-Z0-9\s]/g, "") // Remove symbols
-        .trim();
-
-      // Ensure it's uppercase for a consistent professional look
-      finalCategory = finalCategory.toUpperCase() || "GENERAL";
-    }
-
-    // Extract and clean Tags
+    // Extract Tags
     const rawTags = extractBetween(raw, "---START TAGS---", "---END TAGS---");
     let tags = [];
     if (rawTags) {
@@ -107,13 +88,27 @@ List 4-5 short keyword tags for this article, separated by commas. Example: Reac
         .slice(0, 5);
     }
 
-    return { title, content, summary, category: finalCategory, tags };
+    // Extract Category — comes LAST in prompt so AI knows what it wrote about
+    const rawCategory = extractBetween(raw, "---START CATEGORY---", "---END CATEGORY---");
+    let finalCategory = description
+      ? description.trim().split(" ")[0].toUpperCase()  // fallback: use first word of topic
+      : "GENERAL";
 
+    if (rawCategory) {
+      finalCategory = rawCategory
+        .replace(/\*\*|__|\*|_/g, "")
+        .replace(/category:|topic:|section:/gi, "")
+        .split("\n")[0]
+        .replace(/[^a-zA-Z0-9\s]/g, "")
+        .trim()
+        .toUpperCase();
+    }
+
+    return { title, content, summary, category: finalCategory || "GENERAL", tags };
 
   } catch (err) {
     throw err;
   }
 }
-
 
 module.exports = blogAgent;
