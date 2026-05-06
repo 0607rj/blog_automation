@@ -24,9 +24,9 @@ export default function GenerateForm({ onGenerated }) {
         description: description.trim()
       });
       onGenerated(res.data.blog);
-      navigate("/blogs");
       setTitle("");
       setDescription("");
+
 
     } catch (err) {
       setError("The system is busy right now. Please try again in a moment.");
