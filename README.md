@@ -1,27 +1,36 @@
 # 🖋️ The Manuscript — AI-Powered Personal Publication
 
-A sophisticated, minimalist blog automation system. 
+A professional-grade, minimalist blog automation system that turns rough ideas into polished, human-centric narratives. Built with a focus on speed, aesthetics, and intelligence.
 
 **🚀 Live Links:**
 - **Frontend (Netlify):** [https://hello0123.netlify.app/](https://hello0123.netlify.app/)
 - **Backend (Render):** [https://blog-automation-1-afvy.onrender.com](https://blog-automation-1-afvy.onrender.com)
 
-![Design Preview](https://img.shields.io/badge/Design-Minimalist-stone)
-
+![Design Preview](https://img.shields.io/badge/Design-Premium--Stone-stone)
 ![Backend](https://img.shields.io/badge/Backend-Node.js-green)
-![AI](https://img.shields.io/badge/AI-Groq--LLaMA3-orange)
+![AI](https://img.shields.io/badge/AI-Groq--LLaMA--3.1-orange)
 ![Database](https://img.shields.io/badge/Database-MongoDB--Atlas-brightgreen)
 
 ---
 
 ## ✨ Features
 
-- **Editorial Design**: A premium reading experience with high-end typography (`Crimson Pro` & `Plus Jakarta Sans`).
-- **Human-Like Writing**: Powered by Groq, generating simple, conversational, and honest content (400–500 words).
-- **Drafting Desk**: A distraction-free "New Post" interface with Title and Focus fields.
-- **Intelligent Auto-Tagging**: The AI automatically determines the best category (Culture, Tech, Life, etc.) for your post.
-- **Archive Search**: Real-time filtering to find your stories by title or content instantly.
-- **Automated Workflow**: Generate → Write → Categorize → Save. All in one click.
+### 🧠 Intelligent Drafting Studio
+- **Real-Time Streaming**: Watch your story being written word-by-word with a live typing animation (powered by Server-Sent Events).
+- **Custom Categorization**: Explicitly choose a category or let the AI brain decide the best fit based on your topic.
+- **Dynamic Creation**: New categories are created on-the-fly and automatically added to your global archive filters.
+- **Human-Centric Narratives**: Powered by Groq Llama 3.1, generating long-form, honest, and conversational content.
+
+### 📚 Editorial Experience
+- **Auto-Tagging**: Every story is automatically tagged with 4-5 relevant keywords for better searchability.
+- **Reading Time Estimation**: Automatic word-count analysis to show readers the estimated time commitment.
+- **Smart Related Stories**: Automatically suggests 3 related articles from the same category at the bottom of every page.
+- **Interactive Ratings**: Engagement system allowing users to Like or Dislike stories.
+
+### 🛠️ Developer Excellence
+- **Dynamic URL Switching**: Zero-config deployment. The frontend automatically detects if it's running locally or on Render and switches API URLs instantly.
+- **Marker-Based Parsing**: Robust plain-text marker system (`[BEGIN_CONTENT]`, `[END_CONTENT]`) to eliminate JSON parsing errors common in AI applications.
+- **Premium UI**: Built with Tailwind CSS, featuring glassmorphism, smooth CSS transitions, and magazine-style typography.
 
 ---
 
@@ -30,18 +39,18 @@ A sophisticated, minimalist blog automation system.
 ```
 blog_automation/
 ├── backend/
-│   ├── agent/blogAgent.js       # Core AI logic (Human-tone prompt)
-│   ├── routes/blogRoutes.js     # API Endpoints
-│   ├── models/Blog.js           # Database Schema
-│   └── .env                     # Database & API Keys
+│   ├── agent/blogAgent.js       # AI "Brain" logic with unique marker system
+│   ├── routes/blogRoutes.js     # API & SSE Streaming Endpoints
+│   ├── models/Blog.js           # Mongoose Schema with Tags and Ratings
+│   └── server.js                # Express config with dynamic CORS
 └── frontend/
     ├── src/
-    │   ├── api.js               # Centralized API utility
-    │   ├── App.jsx              # Main Feed & Layout
+    │   ├── api.js               # Smart URL-detecting Axios instance
+    │   ├── App.jsx              # Routing & Global Category Filters
     │   └── components/
-    │       ├── BlogCard.jsx     # Editorial Card Design
-    │       └── GenerateForm.jsx # Minimalist Writing Desk
-    └── .env                     # Frontend Config
+    │       ├── BlogCard.jsx     # Magazine-style card design
+    │       ├── BlogDetail.jsx   # Article view with Related Posts & Tags
+    │       └── GenerateForm.jsx # Drafting desk with Live Streaming UI
 ```
 
 ---
@@ -57,16 +66,11 @@ MONGO_URI=your_mongodb_atlas_uri
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Create a `.env` file in the **frontend** folder:
-```env
-VITE_API_BASE_URL=http://localhost:5000
-```
-
 ### 2. Launch Backend
 ```bash
 cd backend
 npm install
-npm run dev
+node server.js
 ```
 
 ### 3. Launch Frontend
@@ -75,21 +79,22 @@ cd frontend
 npm install
 npm run dev
 ```
-*The app usually runs on [http://localhost:3000](http://localhost:3000) or [http://localhost:3002](http://localhost:3002).*
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, Vite, Tailwind CSS v4.
-- **Backend**: Node.js, Express.
-- **Database**: MongoDB Atlas (Mongoose).
-- **Inference**: Groq SDK (LLaMA 3.3 70B).
+- **Frontend**: React (Vite), Tailwind CSS v4, Framer Motion (Transitions).
+- **Backend**: Node.js, Express, MongoDB Atlas (Mongoose).
+- **AI Brain**: Groq SDK (LLaMA 3.1 8B Instant).
+- **Real-time**: Server-Sent Events (SSE) for word-by-word streaming.
 
 ---
 
-## 🔒 Security
-Sensitive information like API keys and database strings are protected using `.env` files, which are listed in the `.gitignore` to prevent accidental public exposure.
+## 🔒 Security & Performance
+- **Environment Safety**: Sensitive API keys and database strings are fully protected via `.env`.
+- **API Optimization**: Aggressive cleaning of AI output to remove markdown artifacts and ensure a clean production UI.
+- **Responsive Design**: Fully optimized for mobile, tablet, and desktop viewing.
 
 ---
-*Created with focus on simplicity and elegance.*
+*Created for the modern author — Elegant, Intelligent, and Fast.*
