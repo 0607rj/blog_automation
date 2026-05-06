@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import api from "./api";
 import GenerateForm from "./components/GenerateForm";
 import BlogCard from "./components/BlogCard";
@@ -15,6 +15,7 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const [blogs, setBlogs] = useState([]);
   const [fetching, setFetching] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,9 +27,20 @@ export default function App() {
 
   // ─── Categories logic ───
   const categories = useMemo(() => {
-    const list = ["All", ...new Set(blogs.map(b => b.category))];
+    // Clean each category name: remove stars, extra labels, and keep it crisp
+    const cleanList = blogs.map(b => {
+      if (!b.category) return "General";
+      return b.category
+        .replace(/\*\*|__|\*|_/g, "")
+        .replace(/category:|topic:/gi, "")
+        .trim()
+        .toUpperCase();
+    });
+    
+    const list = ["All", ...new Set(cleanList)];
     return list.filter(Boolean);
   }, [blogs]);
+
 
   async function fetchBlogs() {
     try {
@@ -44,7 +56,10 @@ export default function App() {
 
   function handleGenerated(newBlog) {
     setBlogs((prev) => [newBlog, ...prev]);
-    // Redirect logic is usually handled in the component or via navigate
+    // Redirect to the newly created blog's detail page
+    if (newBlog?._id) {
+      navigate(`/blog/${newBlog._id}`);
+    }
   }
 
   const filteredBlogs = useMemo(() => {
@@ -61,14 +76,19 @@ export default function App() {
 
     // Filter by Category
     if (selectedCategory !== "All") {
-      result = result.filter(b => b.category === selectedCategory);
+      result = result.filter(b => {
+        if (!b.category) return false;
+        // Clean the blog's category before comparing to ensure a match
+        const cleanBlogCat = b.category.replace(/\*\*|__|\*|_/g, "").replace(/category:|topic:/gi, "").trim().toUpperCase();
+        return cleanBlogCat === selectedCategory.toUpperCase();
+      });
     }
 
     return result;
   }, [blogs, searchQuery, selectedCategory]);
 
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <div className="min-h-screen bg-white">
         {/* ── Fixed Navigation ── */}
@@ -103,13 +123,25 @@ export default function App() {
             } />
 
             <Route path="/blogs" element={
-
               <div className="max-w-6xl mx-auto py-24 px-6">
                 <header className="mb-12 border-b border-stone-100 pb-12">
-                  <h2 className="text-5xl md:text-7xl font-bold serif mb-10">Archive</h2>
+                  <div className="flex justify-between items-end mb-10">
+                    <div>
+                      <h2 className="text-5xl md:text-7xl font-bold serif">Archive</h2>
+                      {selectedCategory !== "All" && (
+                        <button 
+                          onClick={() => setSelectedCategory("All")}
+                          className="text-xs font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 mt-4 flex items-center gap-2 group transition-all"
+                        >
+                          <span className="group-hover:-translate-x-1 transition-transform">←</span> Back to all stories
+                        </button>
+                      )}
+                    </div>
+                  </div>
                   
                   {/* Category Pills (Medium Style) */}
                   <div className="flex flex-wrap items-center gap-2 mb-10">
+
                     {categories.map((cat) => (
                       <button
                         key={cat}
@@ -171,6 +203,7 @@ export default function App() {
           <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} AI-Powered Editorial. All rights reserved.</p>
         </footer>
       </div>
-    </Router>
+    </>
   );
 }
+
