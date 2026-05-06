@@ -3,7 +3,39 @@ const router = express.Router();
 const blogAgent = require("../agent/blogAgent");
 const Blog = require("../models/Blog");
 
+// ─── GET /generate-stream (SSE for real-time typing) ─────────────────────────
+router.get("/generate-stream", async (req, res) => {
+  const { title, description } = req.query;
+
+  // Set SSE headers
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  try {
+    const existingCategories = await Blog.distinct("category");
+    const blogAgent = require("../agent/blogAgent");
+    const blogData = await blogAgent(undefined, description, title, existingCategories);
+
+    // Stream word by word for typing animation effect
+    const words = blogData.content.split(" ");
+    for (let i = 0; i < words.length; i++) {
+      res.write(`data: ${words[i]} \n\n`);
+      // Small delay between words to create typing effect
+      await new Promise(r => setTimeout(r, 30));
+    }
+
+    res.write("event: done\ndata: [DONE]\n\n");
+    res.end();
+  } catch (err) {
+    res.write(`data: [ERROR] ${err.message}\n\n`);
+    res.end();
+  }
+});
+
 // ─── POST /generate-blog ──────────────────────────────────────────────────────
+
 router.post("/generate-blog", async (req, res) => {
   const { title, category, description } = req.body;
 
@@ -20,6 +52,7 @@ router.post("/generate-blog", async (req, res) => {
       summary: blogData.summary,
       category: blogData.category,
       description: description || "",
+      tags: blogData.tags || [],
     });
     await blog.save();
     console.log(`💾 Blog saved: "${blog.title}"`);
@@ -51,6 +84,26 @@ router.patch("/blogs/:id/rate", async (req, res) => {
     return res.status(200).json({ success: true, blog });
   } catch (error) {
     return res.status(500).json({ error: "Failed to update rating." });
+  }
+});
+
+// ─── GET /blogs/:id/related ──────────────────────────────────────────────────
+router.get("/blogs/:id/related", async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) return res.status(404).json({ error: "Blog not found" });
+
+    // Find up to 3 other blogs in the same category, excluding the current one
+    const related = await Blog.find({
+      _id: { $ne: blog._id },
+      category: blog.category,
+    })
+      .sort({ createdAt: -1 })
+      .limit(3);
+
+    return res.status(200).json({ success: true, related });
+  } catch (error) {
+    return res.status(500).json({ error: "Could not fetch related blogs." });
   }
 });
 

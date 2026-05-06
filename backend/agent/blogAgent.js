@@ -33,7 +33,11 @@ Include a section called "Quick Points:" with 4-5 bullet points using "- " prefi
 
 ---START SUMMARY---
 Write 1-2 sentences that describe the article.
----END SUMMARY---`;
+---END SUMMARY---
+
+---START TAGS---
+List 4-5 short keyword tags for this article, separated by commas. Example: React, JavaScript, Web Dev, Frontend
+---END TAGS---`;
 
 
   try {
@@ -92,7 +96,18 @@ Write 1-2 sentences that describe the article.
       finalCategory = finalCategory.toUpperCase() || "GENERAL";
     }
 
-    return { title, content, summary, category: finalCategory };
+    // Extract and clean Tags
+    const rawTags = extractBetween(raw, "---START TAGS---", "---END TAGS---");
+    let tags = [];
+    if (rawTags) {
+      tags = rawTags
+        .split(",")
+        .map(t => t.replace(/\*\*|__|\*|_/g, "").trim())
+        .filter(t => t.length > 0)
+        .slice(0, 5);
+    }
+
+    return { title, content, summary, category: finalCategory, tags };
 
 
   } catch (err) {
