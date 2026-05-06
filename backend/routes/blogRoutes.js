@@ -8,16 +8,29 @@ router.post("/generate-blog", async (req, res) => {
   const { title, category, description } = req.body;
 
   try {
-    // We don't strictly require anything here anymore to keep it simple,
-    // though description is usually needed for a good blog.
-    const blog = await blogAgent(category, description, title);
+    // Fetch unique existing categories to help the AI decide
+    const existingCategories = await Blog.distinct("category");
+    
+    const blogData = await blogAgent(category, description, title, existingCategories);
+    
+    // Save to MongoDB
+    const blog = new Blog({
+      title: blogData.title,
+      content: blogData.content,
+      summary: blogData.summary,
+      category: blogData.category,
+      description: description || "",
+    });
+    await blog.save();
+    console.log(`💾 Blog saved: "${blog.title}"`);
+    
     return res.status(201).json({ success: true, blog });
   } catch (error) {
     console.error("❌ API Error:", error.message);
-    // If it's a parsing error or AI error, we return 500 or 400 with a clean message
     return res.status(400).json({ error: error.message });
   }
 });
+
 
 // ─── GET /blogs ───────────────────────────────────────────────────────────────
 router.get("/blogs", async (req, res) => {
