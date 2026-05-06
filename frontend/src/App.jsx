@@ -54,13 +54,14 @@ export default function App() {
     }
   }
 
-  function handleGenerated(newBlog) {
+  function handleGenerated(newBlog, blogCategory) {
     setBlogs((prev) => [newBlog, ...prev]);
-    // Redirect to the newly created blog's detail page
-    if (newBlog?._id) {
-      navigate(`/blog/${newBlog._id}`);
-    }
+    // Navigate to archive and pre-select the blog's category
+    const cat = blogCategory || newBlog?.category || "All";
+    setSelectedCategory(cat.toUpperCase());
+    navigate("/blogs");
   }
+
 
   const filteredBlogs = useMemo(() => {
     let result = blogs;

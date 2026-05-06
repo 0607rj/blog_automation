@@ -7,10 +7,34 @@ export default function GenerateForm({ onGenerated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // ── Category state ──
+  const [existingCategories, setExistingCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(""); // "" = let AI decide
+  const [customCategory, setCustomCategory] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
   // ── Real-time typing animation state ──
   const [streamedText, setStreamedText] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const streamRef = useRef(null);
+
+  // Fetch existing categories on mount
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await api.get("/blogs");
+        const cats = res.data.blogs
+          .map(b => b.category)
+          .filter(Boolean)
+          .map(c => c.replace(/\*\*|__|\*|_/g, "").replace(/category:|topic:/gi, "").trim().toUpperCase())
+          .filter(c => c.length > 0);
+        setExistingCategories([...new Set(cats)]);
+      } catch (err) {
+        // silently fail, category picker just shows empty
+      }
+    }
+    loadCategories();
+  }, []);
 
   // Cleans up the SSE connection when component unmounts
   useEffect(() => {
@@ -18,6 +42,11 @@ export default function GenerateForm({ onGenerated }) {
       if (streamRef.current) streamRef.current.close();
     };
   }, []);
+
+  // The final category to use: custom input > dropdown > empty (AI decides)
+  const finalCategory = showCustomInput
+    ? customCategory.trim().toUpperCase()
+    : selectedCategory;
 
   async function handleGenerate(e) {
     e.preventDefault();
@@ -31,17 +60,20 @@ export default function GenerateForm({ onGenerated }) {
     setIsStreaming(true);
 
     try {
-      // ── Step 1: Connect to streaming endpoint for live preview ──
-      const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      // Auto-detect the backend URL
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const apiBase = import.meta.env.VITE_API_BASE_URL
+        || (isLocal ? "http://localhost:5000" : "https://blog-automation-1-afvy.onrender.com");
+
       const params = new URLSearchParams({
         title: title.trim(),
         description: description.trim(),
+        ...(finalCategory ? { category: finalCategory } : {}),
       });
 
-      // Close any existing stream
       if (streamRef.current) streamRef.current.close();
 
-      const evtSource = new EventSource(`${apiBase}/generate-stream?${params}`);
+      const evtSource = new EventSource(`${apiBase}/api/generate-stream?${params}`);
       streamRef.current = evtSource;
 
       evtSource.onmessage = (e) => {
@@ -53,44 +85,37 @@ export default function GenerateForm({ onGenerated }) {
         }
       };
 
-      evtSource.addEventListener("done", async (e) => {
-        evtSource.close();
-        setIsStreaming(false);
-        // ── Step 2: Now actually save the blog to MongoDB ──
+      const saveAndRedirect = async () => {
         try {
           const res = await api.post("/generate-blog", {
             title: title.trim(),
             description: description.trim(),
+            category: finalCategory || undefined,
           });
           setTitle("");
           setDescription("");
+          setCustomCategory("");
+          setSelectedCategory("");
+          setShowCustomInput(false);
           setStreamedText("");
           setLoading(false);
-          if (onGenerated) onGenerated(res.data.blog);
+          if (onGenerated) onGenerated(res.data.blog, finalCategory || res.data.blog?.category);
         } catch (err) {
           setError("Blog was written but failed to save. Please try again.");
           setLoading(false);
         }
+      };
+
+      evtSource.addEventListener("done", async () => {
+        evtSource.close();
+        setIsStreaming(false);
+        await saveAndRedirect();
       });
 
       evtSource.onerror = async () => {
         evtSource.close();
         setIsStreaming(false);
-        // Fallback: If streaming fails, use normal generation
-        try {
-          const res = await api.post("/generate-blog", {
-            title: title.trim(),
-            description: description.trim(),
-          });
-          setTitle("");
-          setDescription("");
-          setStreamedText("");
-          setLoading(false);
-          if (onGenerated) onGenerated(res.data.blog);
-        } catch (err) {
-          setError("Something went wrong. Please try again.");
-          setLoading(false);
-        }
+        await saveAndRedirect();
       };
 
     } catch (err) {
@@ -127,7 +152,7 @@ export default function GenerateForm({ onGenerated }) {
                 disabled={loading}
                 className="w-full text-4xl font-bold serif bg-transparent border-none placeholder-stone-200 focus:outline-none focus:ring-0 text-stone-900"
               />
-              <p className="text-xs text-stone-400 italic">Leave this blank if you want the system to create a title for you.</p>
+              <p className="text-xs text-stone-400 italic">Leave blank to let the system create a title for you.</p>
             </div>
 
             {/* Field 2: Description */}
@@ -146,6 +171,85 @@ export default function GenerateForm({ onGenerated }) {
               />
             </div>
 
+            {/* Field 3: Category Picker */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <span className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center text-xs font-bold">3</span>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-400">Category (Optional)</label>
+              </div>
+
+              {/* Existing category pills */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setSelectedCategory(""); setShowCustomInput(false); }}
+                  className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${
+                    !selectedCategory && !showCustomInput
+                      ? "bg-stone-900 text-white"
+                      : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                  }`}
+                >
+                  Auto-detect
+                </button>
+
+                {existingCategories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => { setSelectedCategory(cat); setShowCustomInput(false); setCustomCategory(""); }}
+                    className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${
+                      selectedCategory === cat && !showCustomInput
+                        ? "bg-stone-900 text-white"
+                        : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+
+                {/* Add new category button */}
+                <button
+                  type="button"
+                  onClick={() => { setShowCustomInput(true); setSelectedCategory(""); }}
+                  className={`px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest transition-all ${
+                    showCustomInput
+                      ? "bg-stone-900 text-white"
+                      : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                  }`}
+                >
+                  + New Category
+                </button>
+              </div>
+
+              {/* Custom category text input */}
+              {showCustomInput && (
+                <div className="flex items-center gap-3 border-b border-stone-200 pb-2">
+                  <input
+                    type="text"
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="Type new category name..."
+                    disabled={loading}
+                    className="flex-1 text-lg font-bold uppercase bg-transparent border-none focus:outline-none text-stone-900 placeholder-stone-300"
+                    autoFocus
+                  />
+                  {customCategory && (
+                    <span className="text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                      New ✓
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <p className="text-xs text-stone-400 italic">
+                {showCustomInput
+                  ? "Type a new category name — it will be created automatically."
+                  : selectedCategory
+                    ? `Blog will go into "${selectedCategory}" category.`
+                    : "Leave on Auto-detect to let the system categorise based on your topic."}
+              </p>
+            </div>
+
             {/* Action Area */}
             <div className="pt-12 border-t border-stone-100 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-md">
@@ -153,8 +257,7 @@ export default function GenerateForm({ onGenerated }) {
                   <p className="text-xs text-red-500 font-bold uppercase tracking-wider bg-red-50 px-4 py-2 rounded-lg">{error}</p>
                 ) : (
                   <p className="text-xs text-stone-400 leading-relaxed">
-                    By clicking the button, our editorial system will analyze your input and
-                    write a long-form narrative for your personal collection.
+                    By clicking the button, our editorial system will write a long-form story for your collection.
                   </p>
                 )}
               </div>
@@ -186,7 +289,6 @@ export default function GenerateForm({ onGenerated }) {
               </div>
               <div className="text-stone-700 leading-relaxed serif text-lg whitespace-pre-line bg-stone-50 p-8 rounded-2xl relative">
                 {streamedText}
-                {/* Blinking cursor while typing */}
                 {isStreaming && (
                   <span className="inline-block w-0.5 h-5 bg-stone-900 animate-pulse ml-0.5 align-middle" />
                 )}
@@ -199,19 +301,18 @@ export default function GenerateForm({ onGenerated }) {
         <div className="space-y-12">
           <div className="bg-stone-50 p-10 rounded-[2rem] space-y-8">
             <h4 className="text-xs font-black uppercase tracking-[0.3em] text-stone-900">Writing Tips</h4>
-
             <div className="space-y-8">
               <div className="space-y-2">
                 <p className="font-bold text-sm">Be Descriptive</p>
-                <p className="text-xs text-stone-500 leading-relaxed serif">The more details you provide, the better the system can understand your unique perspective.</p>
+                <p className="text-xs text-stone-500 leading-relaxed serif">The more details you provide, the better the story turns out.</p>
               </div>
               <div className="space-y-2">
                 <p className="font-bold text-sm">Pick a Category</p>
-                <p className="text-xs text-stone-500 leading-relaxed serif">The system automatically assigns a category, but you can hint at one in your description.</p>
+                <p className="text-xs text-stone-500 leading-relaxed serif">Choose an existing category or create a brand new one. New ones appear as a pill in the archive automatically.</p>
               </div>
               <div className="space-y-2">
                 <p className="font-bold text-sm">Auto Tags</p>
-                <p className="text-xs text-stone-500 leading-relaxed serif">The system will automatically extract keywords from your story and add them as searchable tags.</p>
+                <p className="text-xs text-stone-500 leading-relaxed serif">The system automatically extracts keywords from your story and adds them as searchable tags.</p>
               </div>
             </div>
           </div>
