@@ -5,39 +5,42 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 async function blogAgent(category, description, userTitle, existingCategories = []) {
   console.log(`🤖 Agent processing request...`);
 
-  const categoriesText = existingCategories.length > 0
-    ? `Existing Categories: ${existingCategories.join(", ")}`
-    : "Existing Categories: Technology, Health, Lifestyle, Business";
+  // If user explicitly chose a category, we use it directly — no AI guessing needed
+  const forcedCategory = category ? category.trim().toUpperCase() : null;
 
-  // ── IMPORTANT: Topic comes FIRST so the AI knows what it's writing about
-  // ── Category comes LAST so the AI can categorise AFTER reading the topic
-  const prompt = `Write a blog post using the format below. Fill in each section. Use plain English.
+  const categoriesText = existingCategories.length > 0
+    ? existingCategories.join(", ")
+    : "Technology, Health, Lifestyle, Business, General";
+
+
+  // Topic comes FIRST so AI knows what it's writing about.
+  // Category comes LAST with unique markers so it NEVER gets confused.
+  const prompt = `You are a blog writer. Fill in each section below. Use simple, friendly English.
 
 TITLE: ${userTitle || "Write a good title for this topic"}
 
 TOPIC: ${description || "General Insights"}
 
----START CONTENT---
+[BEGIN_CONTENT]
 Write 3-4 paragraphs (300-350 words). Use simple words.
-Include a section called "Quick Points:" with 4-5 bullet points using "- " prefix.
----END CONTENT---
+Include "Quick Points:" with 4-5 bullet points using "- " prefix.
+[END_CONTENT]
 
----START SUMMARY---
+[BEGIN_SUMMARY]
 Write 1-2 sentences describing the article.
----END SUMMARY---
+[END_SUMMARY]
 
----START TAGS---
-List 4-5 short keyword tags, comma separated. Example: React, Web Dev, Frontend
----END TAGS---
+[BEGIN_TAGS]
+Write 4-5 keyword tags, comma separated.
+[END_TAGS]
 
-${categoriesText}
----START CATEGORY---
-Now that you have written the blog above, pick the single best category word for it.
-Rules:
-- If the topic matches one of the Existing Categories listed above, use THAT EXACT WORD.
-- If it is a new topic not in the list, invent ONE new short word for it (e.g. Cartoons, Banking, Romance).
-- Write ONLY the category word. Nothing else. No quotes. No punctuation.
----END CATEGORY---`;
+[BEGIN_CATEGORY]
+Existing categories: ${categoriesText}
+Based on the TOPIC above, write ONLY ONE single word category.
+If the topic fits an existing category, use that exact word.
+If not, write a new single word for it.
+Output only the category word below this line:
+[END_CATEGORY]`;
 
   try {
     const completion = await groq.chat.completions.create({
@@ -45,7 +48,7 @@ Rules:
       messages: [
         {
           role: "system",
-          content: "You are a helpful blog writer. Follow the format exactly. Fill in every section between its markers.",
+          content: "You are a blog writer. Fill in every section. Replace instruction text with actual content. Do not copy the instructions back.",
         },
         { role: "user", content: prompt },
       ],
@@ -55,12 +58,14 @@ Rules:
 
     const raw = completion.choices[0].message.content;
 
-    // ─── Extract each section ───
+    // ─── Extract helper — uses start + end offsets to avoid overlaps ───
     const extractBetween = (text, startMarker, endMarker) => {
-      const start = text.indexOf(startMarker);
-      const end = text.indexOf(endMarker, start + startMarker.length);
-      if (start === -1 || end === -1) return null;
-      return text.substring(start + startMarker.length, end).trim();
+      const startIdx = text.indexOf(startMarker);
+      if (startIdx === -1) return null;
+      const contentStart = startIdx + startMarker.length;
+      const endIdx = text.indexOf(endMarker, contentStart);
+      if (endIdx === -1) return null;
+      return text.substring(contentStart, endIdx).trim();
     };
 
     // Extract Title
@@ -71,40 +76,51 @@ Rules:
     }
 
     // Extract Content
-    const content = extractBetween(raw, "---START CONTENT---", "---END CONTENT---");
-    if (!content) throw new Error("Could not extract content.");
+    const content = extractBetween(raw, "[BEGIN_CONTENT]", "[END_CONTENT]");
+    if (!content) throw new Error("Could not extract content. Please try again.");
 
     // Extract Summary
-    const summary = extractBetween(raw, "---START SUMMARY---", "---END SUMMARY---") || "A professional read.";
+    const summary = extractBetween(raw, "[BEGIN_SUMMARY]", "[END_SUMMARY]") || "An interesting read.";
 
     // Extract Tags
-    const rawTags = extractBetween(raw, "---START TAGS---", "---END TAGS---");
+    const rawTags = extractBetween(raw, "[BEGIN_TAGS]", "[END_TAGS]");
     let tags = [];
     if (rawTags) {
       tags = rawTags
         .split(",")
         .map(t => t.replace(/\*\*|__|\*|_/g, "").trim())
-        .filter(t => t.length > 0)
+        .filter(t => t.length > 0 && t.length < 30)
         .slice(0, 5);
     }
 
-    // Extract Category — comes LAST in prompt so AI knows what it wrote about
-    const rawCategory = extractBetween(raw, "---START CATEGORY---", "---END CATEGORY---");
-    let finalCategory = description
-      ? description.trim().split(" ")[0].toUpperCase()  // fallback: use first word of topic
-      : "GENERAL";
+    // Extract Category — unique markers, comes last so AI knows the topic
+    const rawCategory = extractBetween(raw, "[BEGIN_CATEGORY]", "[END_CATEGORY]");
+    let finalCategory = "GENERAL";
 
     if (rawCategory) {
-      finalCategory = rawCategory
+      // Take only the last line (the actual category word, not the instructions)
+      const lines = rawCategory.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      const lastLine = lines[lines.length - 1] || "";
+
+      finalCategory = lastLine
         .replace(/\*\*|__|\*|_/g, "")
-        .replace(/category:|topic:|section:/gi, "")
-        .split("\n")[0]
+        .replace(/category:|topic:|output:|word:/gi, "")
         .replace(/[^a-zA-Z0-9\s]/g, "")
         .trim()
+        .split(" ")[0]  // only first word
         .toUpperCase();
     }
 
-    return { title, content, summary, category: finalCategory || "GENERAL", tags };
+    // Safety: if extraction gave garbage, fall back to first word of description
+    if (!finalCategory || finalCategory.length < 2) {
+      finalCategory = description
+        ? description.trim().split(" ")[0].toUpperCase()
+        : "GENERAL";
+    }
+
+    console.log(`✅ Blog: "${title}" | Category: ${forcedCategory || finalCategory} | Tags: ${tags.join(", ")}`);
+    return { title, content, summary, category: forcedCategory || finalCategory, tags };
+
 
   } catch (err) {
     throw err;
