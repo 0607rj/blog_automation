@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import api from "./api";
-import GenerateForm from "./components/GenerateForm";
+import PipelineStudio from "./components/PipelineStudio";
 import BlogCard from "./components/BlogCard";
 import Home from "./components/Home";
 import BlogDetail from "./components/BlogDetail";
@@ -103,10 +103,10 @@ export default function App() {
               Archive
             </Link>
             <Link 
-              to="/create"
+              to="/pipeline"
               className="text-xs font-bold uppercase tracking-widest bg-stone-900 text-white px-8 py-3 rounded-full hover:bg-stone-800 transition-all active:scale-95 shadow-xl"
             >
-              Create Blog
+              Create New Blog
             </Link>
           </div>
         </nav>
@@ -116,10 +116,10 @@ export default function App() {
           
           <Routes>
             <Route path="/" element={<Home />} />
-            
-            <Route path="/create" element={
-              <div className="bg-stone-50 min-h-screen py-20 px-6">
-                <GenerateForm onGenerated={handleGenerated} />
+
+            <Route path="/pipeline" element={
+              <div className="bg-white min-h-screen py-20 px-6">
+                <PipelineStudio onGenerated={handleGenerated} />
               </div>
             } />
 
@@ -201,7 +201,7 @@ export default function App() {
             <Link to="/blogs" className="text-xs font-bold text-stone-500 hover:text-stone-900">Archive</Link>
             <a href="#" className="text-xs font-bold text-stone-500 hover:text-stone-900">About</a>
           </div>
-          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} AI-Powered Editorial. All rights reserved.</p>
+          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} The Editorial Collection. All rights reserved.</p>
         </footer>
       </div>
     </>

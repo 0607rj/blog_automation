@@ -1,71 +1,108 @@
 const express = require("express");
 const router = express.Router();
-const blogAgent = require("../agent/blogAgent");
+
+// ─── Models ───
 const Blog = require("../models/Blog");
+const Persona = require("../models/Persona");
+const ResearchHistory = require("../models/ResearchHistory");
+const CompetitorAnalysis = require("../models/CompetitorAnalysis");
 
-// ─── GET /generate-stream (SSE for real-time typing) ─────────────────────────
-router.get("/generate-stream", async (req, res) => {
-  const { title, description } = req.query;
+// ─── Agents ───
+const personaAgent = require("../agents/personaAgent");
+const researchAgent = require("../agents/researchAgent");
+const competitorAgent = require("../agents/competitorAgent");
+const { memoryAgent, updateMemory } = require("../agents/memoryAgent");
+const orchestratorAgent = require("../agents/orchestratorAgent");
+const blogGeneratorAgent = require("../agents/blogGeneratorAgent");
 
-  // Set SSE headers
+// ═══════════════════════════════════════════════════════════════════════════════
+// AI Pipeline Workflow
+// ═══════════════════════════════════════════════════════════════════════════════
+
+router.get("/pipeline-stream", async (req, res) => {
+  const { audience, niche } = req.query;
+
+  // SSE Headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
   res.flushHeaders();
 
-  try {
-    const existingCategories = await Blog.distinct("category");
-    const blogAgent = require("../agent/blogAgent");
-    const blogData = await blogAgent(undefined, description, title, existingCategories);
+  const sendStep = (step, status, data) => {
+    res.write(`data: ${JSON.stringify({ step, status, data })}\n\n`);
+  };
 
-    // Stream word by word for typing animation effect
-    const words = blogData.content.split(" ");
+  try {
+    // ── STEP 1: Persona Agent ──
+    sendStep("persona", "running", { message: "Understanding your audience..." });
+    const personaResult = await personaAgent(audience || "General", niche || "General");
+    await Persona.create({ niche, audience, profile: personaResult });
+    sendStep("persona", "done", personaResult);
+
+    // ── STEP 2: Research Agent ──
+    sendStep("research", "running", { message: "Researching trends and keywords..." });
+    const researchResult = await researchAgent(personaResult, niche);
+    await ResearchHistory.create({ niche, audience, ...researchResult });
+    sendStep("research", "done", researchResult);
+
+    // ── STEP 3: Competitor Agent ──
+    sendStep("competitor", "running", { message: "Analyzing competitor gaps..." });
+    const competitorResult = await competitorAgent(researchResult, niche);
+    await CompetitorAnalysis.create({ niche, audience, ...competitorResult });
+    sendStep("competitor", "done", competitorResult);
+
+    // ── STEP 4: Memory Agent ──
+    sendStep("memory", "running", { message: "Checking content history..." });
+    const memoryResult = await memoryAgent(niche || "General");
+    sendStep("memory", "done", memoryResult);
+
+    // ── STEP 5: Orchestrator Agent ──
+    sendStep("orchestrator", "running", { message: "Building content strategy..." });
+    const blueprint = await orchestratorAgent(personaResult, researchResult, competitorResult, memoryResult);
+    sendStep("orchestrator", "done", blueprint);
+
+    // ── STEP 6: Blog Generator Agent ──
+    sendStep("generator", "running", { message: "Writing your blog..." });
+    const blogResult = await blogGeneratorAgent(blueprint, personaResult);
+    sendStep("generator", "done", { title: blogResult.title });
+
+    // ── STEP 7: Stream the blog content word by word ──
+    sendStep("streaming", "running", { message: "Streaming content..." });
+    const words = blogResult.content.split(" ");
     for (let i = 0; i < words.length; i++) {
-      res.write(`data: ${words[i]} \n\n`);
-      // Small delay between words to create typing effect
-      await new Promise(r => setTimeout(r, 30));
+      res.write(`data: ${JSON.stringify({ step: "word", status: "streaming", data: words[i] + " " })}\n\n`);
+      await new Promise(r => setTimeout(r, 25));
     }
 
-    res.write("event: done\ndata: [DONE]\n\n");
-    res.end();
-  } catch (err) {
-    res.write(`data: [ERROR] ${err.message}\n\n`);
-    res.end();
-  }
-});
-
-// ─── POST /generate-blog ──────────────────────────────────────────────────────
-
-router.post("/generate-blog", async (req, res) => {
-  const { title, category, description } = req.body;
-
-  try {
-    // Fetch unique existing categories to help the AI decide
-    const existingCategories = await Blog.distinct("category");
-    
-    const blogData = await blogAgent(category, description, title, existingCategories);
-    
-    // Save to MongoDB
+    // ── STEP 8: Save to MongoDB ──
     const blog = new Blog({
-      title: blogData.title,
-      content: blogData.content,
-      summary: blogData.summary,
-      category: blogData.category,
-      description: description || "",
-      tags: blogData.tags || [],
+      title: blogResult.title,
+      content: blogResult.content,
+      summary: blogResult.summary,
+      category: blogResult.category,
+      tags: blogResult.tags,
+      description: `Audience: ${audience} | Niche: ${niche}`,
     });
     await blog.save();
-    console.log(`💾 Blog saved: "${blog.title}"`);
-    
-    return res.status(201).json({ success: true, blog });
-  } catch (error) {
-    console.error("❌ API Error:", error.message);
-    return res.status(400).json({ error: error.message });
+
+    // Update memory with this new blog
+    await updateMemory(niche || "General", blogResult.title, blogResult.tags, blogResult.category, blueprint.contentAngle);
+
+    sendStep("complete", "done", { blogId: blog._id, title: blog.title, category: blog.category });
+    res.write("event: done\ndata: [DONE]\n\n");
+    res.end();
+
+  } catch (err) {
+    sendStep("error", "failed", { message: err.message });
+    res.end();
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXISTING ROUTES
+// ═══════════════════════════════════════════════════════════════════════════════
 
-// ─── GET /blogs ───────────────────────────────────────────────────────────────
+// ─── GET /blogs ──
 router.get("/blogs", async (req, res) => {
   try {
     const blogs = await Blog.find().sort({ createdAt: -1 });
@@ -75,9 +112,9 @@ router.get("/blogs", async (req, res) => {
   }
 });
 
-// ─── PATCH /blogs/:id/rate ───────────────────────────────────────────────────
+// ─── PATCH /blogs/:id/rate ──
 router.patch("/blogs/:id/rate", async (req, res) => {
-  const { type } = req.body; // 'like' or 'dislike'
+  const { type } = req.body;
   try {
     const update = type === "like" ? { $inc: { likes: 1 } } : { $inc: { dislikes: 1 } };
     const blog = await Blog.findByIdAndUpdate(req.params.id, update, { new: true });
@@ -87,20 +124,13 @@ router.patch("/blogs/:id/rate", async (req, res) => {
   }
 });
 
-// ─── GET /blogs/:id/related ──────────────────────────────────────────────────
+// ─── GET /blogs/:id/related ──
 router.get("/blogs/:id/related", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ error: "Blog not found" });
-
-    // Find up to 3 other blogs in the same category, excluding the current one
-    const related = await Blog.find({
-      _id: { $ne: blog._id },
-      category: blog.category,
-    })
-      .sort({ createdAt: -1 })
-      .limit(3);
-
+    const related = await Blog.find({ _id: { $ne: blog._id }, category: blog.category })
+      .sort({ createdAt: -1 }).limit(3);
     return res.status(200).json({ success: true, related });
   } catch (error) {
     return res.status(500).json({ error: "Could not fetch related blogs." });
@@ -108,4 +138,3 @@ router.get("/blogs/:id/related", async (req, res) => {
 });
 
 module.exports = router;
-
