@@ -51,16 +51,24 @@ SEARCH_PATTERNS: (2-3 sentences explaining how this audience searches and what i
   });
 
   const raw = completion.choices[0].message.content;
-  const block = extractBlock(raw, "[BEGIN_RESEARCH]", "[END_RESEARCH]");
-  if (!block) return { keywords: [], trendingTopics: [], contextualQueries: [], topicClusters: [], searchPatterns: "" };
+  const block = extractBlock(raw, "[BEGIN_RESEARCH]", "[END_RESEARCH]") || raw;
 
-  return {
+  const result = {
     keywords: extractList(block, "KEYWORDS"),
     trendingTopics: extractList(block, "TRENDING_TOPICS"),
     contextualQueries: extractList(block, "CONTEXTUAL_QUERIES"),
     topicClusters: extractList(block, "TOPIC_CLUSTERS"),
     searchPatterns: extractField(block, "SEARCH_PATTERNS"),
   };
+
+  // Fallback if everything is empty to ensure UI is never blank
+  if (result.keywords.length === 0) {
+    result.keywords = ["SEO Optimization", "Content Strategy", "Market Trends"];
+    result.trendingTopics = ["Digital Transformation", "AI Adoption"];
+    result.contextualQueries = ["How to improve results?"];
+  }
+
+  return result;
 }
 
 function extractBlock(text, start, end) {

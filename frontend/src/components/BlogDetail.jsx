@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api";
+import ReactMarkdown from "react-markdown";
 
 export default function BlogDetail() {
   const { id } = useParams();
@@ -56,146 +57,165 @@ export default function BlogDetail() {
   const readingTime = blog.readingTime || Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <article className="max-w-4xl mx-auto py-20 px-6 animate-fade-in">
-      <Link to="/blogs" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors mb-12">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Back to Feed
-      </Link>
+    <div className="bg-white min-h-screen">
+      <nav className="border-b border-stone-100 py-6 px-8 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <Link to="/" className="text-xl font-black tracking-tighter text-stone-900">The Manuscript<span className="text-purple-600">.</span></Link>
+        <Link to="/blogs" className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-all">Back to Library</Link>
+      </nav>
 
-      <header className="mb-16">
-        <div className="flex items-center gap-4 mb-6 flex-wrap">
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">{blog.category}</span>
-          <span className="w-1 h-1 bg-stone-300 rounded-full" />
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
-            {new Date(blog.createdAt).toLocaleDateString()}
-          </span>
-          <span className="w-1 h-1 bg-stone-300 rounded-full" />
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
-            {readingTime} min read
-          </span>
-          <span className="w-1 h-1 bg-stone-300 rounded-full" />
-          <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
-            {wordCount} words
-          </span>
-          {blog.validationScore > 0 && (
-            <>
-              <span className="w-1 h-1 bg-stone-300 rounded-full" />
-              <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-500">
-                Quality: {blog.validationScore}%
-              </span>
-            </>
-          )}
-        </div>
-
-        <h1 className="text-5xl md:text-7xl font-bold text-stone-900 leading-tight serif mb-8">
-          {blog.title}
-        </h1>
-
-        <p className="text-2xl text-stone-500 italic serif leading-relaxed border-l-4 border-stone-100 pl-8">
-          {blog.summary}
-        </p>
-
-        {/* SEO Meta Description */}
-        {blog.metaDescription && (
-          <div className="mt-6 bg-purple-50 border border-purple-100 rounded-2xl px-6 py-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-500 mb-1">Meta Description</p>
-            <p className="text-sm text-stone-600 serif">{blog.metaDescription}</p>
+      <article className="animate-fade-in">
+        {/* ── Premium Hero Section ── */}
+        <header className="max-w-5xl mx-auto pt-24 pb-16 px-8 border-b border-stone-100">
+          <div className="flex items-center gap-3 mb-8">
+            <span className="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black uppercase tracking-widest rounded-full">{blog.category}</span>
+            <span className="text-stone-300">/</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{readingTime} min read</span>
+            <span className="text-stone-300">/</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">{new Date(blog.createdAt).toLocaleDateString()}</span>
           </div>
-        )}
 
-        {/* Auto Tags */}
-        {blog.tags && blog.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-8">
-            {blog.tags.map((tag, i) => (
-              <span
-                key={i}
-                className="text-[10px] font-bold uppercase tracking-widest bg-stone-100 text-stone-500 px-3 py-1.5 rounded-full hover:bg-stone-900 hover:text-white transition-all cursor-default"
+          <h1 className="text-4xl md:text-6xl font-bold text-stone-900 leading-[1.2] serif tracking-tight mb-12 max-w-4xl text-left">
+            {blog.title}
+          </h1>
+
+          <p className="text-xl text-stone-500 serif leading-relaxed max-w-3xl italic text-left">
+            {blog.summary}
+          </p>
+
+          <div className="mt-12 flex items-center gap-4">
+            <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-white font-bold text-xs font-serif italic">M</div>
+            <div>
+              <p className="text-xs font-bold text-stone-900 uppercase tracking-widest">Editorial Staff</p>
+              <p className="text-[10px] text-stone-400 uppercase font-medium">The Manuscript Journal</p>
+            </div>
+          </div>
+        </header>
+
+        {/* ── Main Content Grid ── */}
+        <div className="max-w-5xl mx-auto px-8 py-20 grid lg:grid-cols-12 gap-20">
+          
+          {/* Left: Content Area */}
+          <div className="lg:col-span-8">
+            <div className="prose prose-stone max-w-none text-left">
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => <h1 className="hidden">{children}</h1>, // Already in hero
+                  h2: ({ children }) => <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mt-16 mb-8 serif border-l-4 border-purple-500 pl-6 text-left">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-2xl font-bold text-stone-800 mt-12 mb-6 serif text-left">{children}</h3>,
+                  p: ({ children }) => <p className="text-xl text-stone-700 leading-[1.9] mb-10 serif text-left">{children}</p>,
+                  ul: ({ children }) => <ul className="list-none space-y-6 mb-10 pl-0 text-left">{children}</ul>,
+                  li: ({ children }) => (
+                    <li className="flex items-start gap-4 text-xl text-stone-700 serif text-left">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-3 flex-shrink-0" />
+                      <span>{children}</span>
+                    </li>
+                  ),
+                  blockquote: ({ children }) => (
+                    <blockquote className="my-16 py-8 border-t border-b border-stone-200 text-3xl text-stone-900 serif italic leading-relaxed text-center px-12">
+                      "{children}"
+                    </blockquote>
+                  ),
+                  strong: ({ children }) => <strong className="font-bold text-stone-900">{children}</strong>,
+                }}
               >
-                # {tag}
-              </span>
-            ))}
-          </div>
-        )}
+                {blog.content}
+              </ReactMarkdown>
+            </div>
 
-        {/* Business Context */}
-        {blog.businessContext?.companyName && (
-          <div className="mt-6 flex items-center gap-4 text-xs text-stone-400">
-            <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
-              🏢 {blog.businessContext.companyName}
-            </span>
-            {blog.businessContext.domain && (
-              <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
-                🔎 {blog.businessContext.domain}
-              </span>
-            )}
-            {blog.businessContext.industry && (
-              <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
-                🏭 {blog.businessContext.industry}
-              </span>
+            {/* FAQ Section Integrated */}
+            {blog.faq && blog.faq.length > 0 && (
+              <section className="mt-32 pt-20 border-t border-stone-100">
+                <h3 className="text-xs font-black uppercase tracking-[0.4em] text-purple-600 mb-12">Intelligence Supplement / FAQ</h3>
+                <div className="space-y-8">
+                  {blog.faq.map((item, i) => (
+                    <div key={i} className="group cursor-pointer">
+                      <p className="font-bold text-stone-900 mb-3 text-lg group-hover:text-purple-600 transition-colors text-left">{item.question}</p>
+                      <p className="text-stone-500 serif text-base leading-relaxed text-left">{item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
-        )}
-      </header>
 
-      {/* ── Blog Content ── */}
-      <div className="prose prose-stone max-w-none">
-        <div className="text-xl text-stone-800 leading-[1.9] whitespace-pre-line space-y-8 serif">
-          {blog.content}
-        </div>
-      </div>
-
-      {/* ── FAQ Section ── */}
-      {blog.faq && blog.faq.length > 0 && (
-        <section className="mt-20 pt-16 border-t border-stone-100">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-purple-600 mb-8">
-            Frequently Asked Questions
-          </h3>
-          <div className="space-y-6">
-            {blog.faq.map((item, i) => (
-              <div key={i} className="bg-stone-50 rounded-2xl p-6 border border-stone-100">
-                <p className="font-bold text-stone-900 mb-2 text-base">{item.question}</p>
-                <p className="text-stone-600 serif text-sm leading-relaxed">{item.answer}</p>
+          {/* Right: Sidebar Meta Intelligence */}
+          <aside className="lg:col-span-4 space-y-12">
+            <div className="sticky top-32">
+              <div className="bg-stone-50 rounded-3xl p-8 border border-stone-100">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-6">Article Context</p>
+                <div className="space-y-6">
+                  {blog.metaDescription && (
+                    <div>
+                      <p className="text-[10px] font-bold text-stone-400 uppercase mb-1">Overview</p>
+                      <p className="text-sm text-stone-600 serif leading-relaxed">{blog.metaDescription}</p>
+                    </div>
+                  )}
+                  {blog.tags && (
+                    <div className="flex flex-wrap gap-2 pt-4">
+                      {blog.tags.map((t, i) => <span key={i} className="text-[9px] font-bold bg-white border border-stone-200 px-2 py-1 rounded uppercase tracking-wider text-stone-500">#{t}</span>)}
+                    </div>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {/* ── Footer ── */}
-      <footer className="mt-32 pt-16 border-t border-stone-100 flex flex-col md:flex-row justify-between items-center gap-12">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-stone-900 rounded-full flex items-center justify-center text-white text-xs font-bold uppercase">E</div>
-          <div>
-            <p className="text-sm font-bold">The Manuscript Editor</p>
-            <p className="text-xs text-stone-400">Autonomous AI Marketing Engine</p>
+              <div className="mt-8 p-8 flex justify-center gap-12 border-t border-stone-100">
+                <button onClick={() => handleRate("like")} className="text-center group">
+                  <div className="text-2xl mb-1 group-hover:scale-125 transition-transform">💎</div>
+                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{blog.likes || 0}</p>
+                </button>
+                <button onClick={() => handleRate("dislike")} className="text-center group">
+                  <div className="text-2xl mb-1 group-hover:scale-125 transition-transform rotate-180">💎</div>
+                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{blog.dislikes || 0}</p>
+                </button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </article>
+
+      {/* ── Premium Global Footer ── */}
+      <footer className="bg-stone-950 text-white pt-32 pb-20 px-8 mt-20">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-20">
+          <div className="md:col-span-5">
+            <h2 className="text-4xl font-bold mb-8 serif">The Manuscript<span className="text-purple-500">.</span></h2>
+            <p className="text-stone-400 serif text-lg leading-relaxed mb-8">
+              Transforming raw business data into high-end editorial intelligence. Our autonomous agents research, synthesize, and write content that resonates with human psychology and dominates AI search.
+            </p>
+            <div className="flex gap-4">
+              {['Twitter', 'LinkedIn', 'Instagram'].map(s => (
+                <a key={s} href="#" className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-white transition-colors">{s}</a>
+              ))}
+            </div>
+          </div>
+          
+          <div className="md:col-span-3">
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-purple-500 mb-8">Navigation</h4>
+            <ul className="space-y-4 text-stone-400 font-medium text-sm">
+              <li><Link to="/" className="hover:text-white transition-colors">Home Studio</Link></li>
+              <li><Link to="/blogs" className="hover:text-white transition-colors">The Library</Link></li>
+              <li><a href="#" className="hover:text-white transition-colors">Architecture</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+            </ul>
+          </div>
+
+          <div className="md:col-span-4">
+            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-purple-500 mb-8">Newsletter</h4>
+            <p className="text-stone-400 text-sm mb-6 serif">Get the latest AI marketing intelligence delivered to your inbox.</p>
+            <div className="flex gap-2">
+              <input type="email" placeholder="Email address" className="bg-stone-900 border border-stone-800 rounded-xl px-4 py-3 text-sm flex-1 focus:outline-none focus:border-purple-500" />
+              <button className="bg-purple-600 hover:bg-purple-500 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all">Join</button>
+            </div>
           </div>
         </div>
-
-        {/* Rating Buttons */}
-        <div className="flex items-center gap-8">
-          <button onClick={() => handleRate("like")} className="flex flex-col items-center gap-2 group">
-            <div className="w-14 h-14 rounded-full border border-stone-100 flex items-center justify-center group-hover:bg-stone-50 transition-all">
-              <svg className="w-6 h-6 text-stone-400 group-hover:text-stone-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10h4.708C19.746 10 20.621 10.875 20.621 11.958c0 .504-.192.983-.542 1.346l-4.708 4.708a2 2 0 01-1.414.586H9a2 2 0 01-2-2v-9a2 2 0 01.586-1.414L11.172 2.586a2 2 0 012.828 0 2 2 0 01.586 1.414V10z"></path></svg>
-            </div>
-            <span className="text-xs font-bold text-stone-400 group-hover:text-stone-900">{blog.likes || 0} Likes</span>
-          </button>
-
-          <button onClick={() => handleRate("dislike")} className="flex flex-col items-center gap-2 group">
-            <div className="w-14 h-14 rounded-full border border-stone-100 flex items-center justify-center group-hover:bg-stone-50 transition-all">
-              <svg className="w-6 h-6 text-stone-400 group-hover:text-stone-900 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 10h4.708C19.746 10 20.621 10.875 20.621 11.958c0 .504-.192.983-.542 1.346l-4.708 4.708a2 2 0 01-1.414.586H9a2 2 0 01-2-2v-9a2 2 0 01.586-1.414L11.172 2.586a2 2 0 012.828 0 2 2 0 01.586 1.414V10z"></path></svg>
-            </div>
-            <span className="text-xs font-bold text-stone-400 group-hover:text-stone-900">{blog.dislikes || 0} Dislikes</span>
-          </button>
+        <div className="max-w-6xl mx-auto mt-32 pt-8 border-t border-stone-900 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600">
+          <p>© 2024 The Manuscript. All rights reserved.</p>
+          <p>Hand-crafted Excellence</p>
         </div>
-
-        <Link to="/blogs" className="text-sm font-bold uppercase tracking-widest text-stone-900 hover:underline">
-          Read More Posts
-        </Link>
       </footer>
 
       {/* ── Related Blogs Section ── */}
       {related.length > 0 && (
-        <section className="mt-24 pt-16 border-t border-stone-100">
+        <section className="max-w-6xl mx-auto mt-24 pt-16 pb-32 px-8 border-t border-stone-100">
           <h3 className="text-xs font-black uppercase tracking-[0.3em] text-stone-400 mb-10">
             More from {blog.category}
           </h3>
@@ -220,7 +240,6 @@ export default function BlogDetail() {
           </div>
         </section>
       )}
-
-    </article>
+    </div>
   );
 }

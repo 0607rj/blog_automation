@@ -366,18 +366,25 @@ export default function PipelineStudio({ onGenerated }) {
                     {/* Expandable data */}
                     {isExpand && data && (
                       <div className="mt-2 mb-2 bg-white border border-stone-200 rounded-2xl p-6 space-y-3 text-xs animate-fade-in">
-                        {Object.entries(data).map(([key, val]) => {
-                          if (!val || (Array.isArray(val) && val.length === 0)) return null;
-                          const display = Array.isArray(val) ? val.join(" · ") : String(val);
-                          return (
-                            <div key={key} className="flex gap-3">
-                              <span className="font-black text-stone-400 uppercase text-[9px] tracking-wider w-32 flex-shrink-0 mt-0.5">
-                                {key.replace(/([A-Z])/g, " $1").trim()}
-                              </span>
-                              <span className="text-stone-700 leading-relaxed">{display}</span>
-                            </div>
-                          );
-                        })}
+                        {agent.key === "personaLoader" && data?.count === 0 ? (
+                          <div className="py-2">
+                            <p className="text-purple-600 font-black uppercase tracking-widest text-[10px] mb-1">✨ Zero-Shot Mode Active</p>
+                            <p className="text-stone-500 serif">No matching templates found in library. Signaling Persona Agent to generate a custom profile from scratch.</p>
+                          </div>
+                        ) : (
+                          Object.entries(data).map(([key, val]) => {
+                            if (!val || (Array.isArray(val) && val.length === 0)) return null;
+                            const display = Array.isArray(val) ? val.join(" · ") : String(val);
+                            return (
+                              <div key={key} className="flex gap-3">
+                                <span className="font-black text-stone-400 uppercase text-[9px] tracking-wider w-32 flex-shrink-0 mt-0.5">
+                                  {key.replace(/([A-Z])/g, " $1").trim()}
+                                </span>
+                                <span className="text-stone-700 leading-relaxed">{display}</span>
+                              </div>
+                            );
+                          })
+                        )}
                       </div>
                     )}
                   </div>

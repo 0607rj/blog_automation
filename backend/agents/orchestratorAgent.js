@@ -7,7 +7,8 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
  * Input: persona, research, competitor analysis, memory context
  * Output: detailed blog blueprint — exact instructions for the content agent
  */
-async function orchestratorAgent(persona, research, competitor, memory) {
+async function orchestratorAgent(persona, research, competitor, memory, domainResult) {
+  const detectedCategory = (domainResult.industry || domainResult.domain || "GENERAL").split(" ")[0].toUpperCase();
   const prompt = `You are a senior content strategist and the BRAIN of an AI marketing engine. Based on intelligence from 5 specialized agents, create a precise content strategy.
 
 === PERSONA INTELLIGENCE ===
@@ -81,7 +82,7 @@ WORD_COUNT: (recommended word count, between 800-1200)
     sectionsToCover: extractList(block, "SECTIONS_TO_COVER"),
     ctaStrategy: extractField(block, "CTA_STRATEGY"),
     rankingStrategy: extractField(block, "RANKING_STRATEGY"),
-    category: extractField(block, "CATEGORY").split(" ")[0].toUpperCase() || "GENERAL",
+    category: extractField(block, "CATEGORY").split(" ")[0].toUpperCase() || detectedCategory,
     wordCount: parseInt(extractField(block, "WORD_COUNT")) || 800,
   };
 }

@@ -36,16 +36,15 @@ Missing Topics: ${(competitor.missingTopics || []).join(", ")}
 Weaknesses: ${(competitor.competitorWeaknesses || []).join(", ")}
 
 WRITING RULES:
-1. Write for this SPECIFIC audience — not for everyone
-2. Sound human, warm, conversational — NOT robotic AI
-3. Use the emotional tone naturally throughout
-4. Weave target keywords naturally — NO keyword stuffing
-5. Address pain points and fears within the content
-6. Use psychological triggers where appropriate
-7. Optimize for AI search by directly answering contextual queries
-8. Use clean formatting with proper H2 headers
-9. Include actionable advice — every paragraph must add value
-10. Use "you" and "your" to speak directly to the reader
+1. STRUCTURE: Start with exactly one # H1 Title. Use ## H2 for main sections and ### H3 for deeper insights.
+2. READABILITY: Use bulleted lists for checklists, steps, or features. No long blocks of text.
+3. EMPHASIS: Use **Bold** for key terms and concepts.
+4. AUTHORITY: Use > Blockquotes for "Executive Insights" or powerful summary statements.
+5. PERSPECTIVE: Use "you" and "your" to speak directly to the reader's psychology.
+6. STYLE: Highly editorial, warm, and human — NO AI clichés (e.g., 'unleash', 'dive deep').
+7. VALUE: Every section must provide actionable advice or a "Focusing Point."
+8. WORD COUNT: Aim for ${blueprint.wordCount || 800} words of high-density value.
+9. AI-SEARCH: Directly answer contextual queries within the body text.
 
 Respond in this EXACT format:
 

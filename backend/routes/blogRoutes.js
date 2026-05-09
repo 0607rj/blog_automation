@@ -27,6 +27,7 @@ router.post("/pipeline-stream", async (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // Critical for preventing buffering
   res.flushHeaders();
 
   const sendStep = (step, status, data) => {
@@ -128,7 +129,7 @@ router.post("/pipeline-stream", async (req, res) => {
     // STEP 7: ORCHESTRATOR AGENT
     // ══════════════════════════════════════════════════════════════
     sendStep("orchestrator", "running", { message: "Building strategic content blueprint..." });
-    const blueprint = await orchestratorAgent(personaResult, researchResult, competitorResult, memoryResult);
+    const blueprint = await orchestratorAgent(personaResult, researchResult, competitorResult, memoryResult, domainResult);
     sendStep("orchestrator", "done", blueprint);
 
     // ══════════════════════════════════════════════════════════════
@@ -152,7 +153,8 @@ router.post("/pipeline-stream", async (req, res) => {
     const words = blogResult.content.split(" ");
     for (let i = 0; i < words.length; i++) {
       res.write(`data: ${JSON.stringify({ step: "word", status: "streaming", data: words[i] + " " })}\n\n`);
-      await new Promise(r => setTimeout(r, 20));
+      // Use a slightly longer delay for smoother UI updates
+      await new Promise(r => setTimeout(r, 40));
     }
 
     // ══════════════════════════════════════════════════════════════
