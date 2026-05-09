@@ -16,9 +16,15 @@ async function personaAgent(selectedPersonas, businessContext) {
   const allSearchIntent = selectedPersonas.flatMap(p => p.searchIntent || []);
   const allBehaviors = selectedPersonas.flatMap(p => p.behaviorPatterns || []);
   const allTriggers = selectedPersonas.flatMap(p => p.psychologicalTriggers || []);
-  const personaLabels = selectedPersonas.map(p => p.label).join(", ");
+  const personaLabels = selectedPersonas.length > 0 
+    ? selectedPersonas.map(p => p.label).join(", ") 
+    : "No matching templates found — PERFORM DYNAMIC ZERO-SHOT GENERATION";
 
-  const prompt = `You are a buyer persona intelligence analyst. You have been given data from ${selectedPersonas.length} audience personas relevant to this business. Synthesize them into ONE unified audience profile.
+  const prompt = `You are a buyer persona intelligence analyst. 
+
+${selectedPersonas.length > 0 
+  ? `You have been given data from ${selectedPersonas.length} audience personas relevant to this business. Synthesize them into ONE unified audience profile.`
+  : `No pre-defined templates matched this business domain. Perform deep contextual reasoning to BUILD a custom buyer persona from scratch.`}
 
 === BUSINESS CONTEXT ===
 Company: ${businessContext.companyName || "Not provided"}
@@ -28,6 +34,7 @@ Business Goal: ${businessContext.businessGoal || "Not provided"}
 Target Region: ${businessContext.targetRegion || "Global"}
 Tone: ${businessContext.tonePreference || "Professional"}
 
+${selectedPersonas.length > 0 ? `
 === PERSONA TEMPLATES LOADED ===
 Templates: ${personaLabels}
 
@@ -47,6 +54,15 @@ ${allGoals.join(" | ")}
 ${allSearchIntent.join(" | ")}
 
 Now SYNTHESIZE this into a unified profile that is specific to the business context. Remove duplicates, find common patterns, and make it product-specific.
+` : `
+=== TASK ===
+Based ONLY on the business context above, generate a deep audience profile. Think about:
+- Who is the specific human being that needs this product?
+- What keeps them up at night (Pain Points & Fears)?
+- What does their ideal life look like (Goals)?
+- How do they feel right now (Emotions)?
+- What exact phrases would they search for on Google or ChatGPT?
+`}
 
 Respond in this EXACT format:
 

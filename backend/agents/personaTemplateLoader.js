@@ -43,17 +43,8 @@ function personaTemplateLoader(domainResult) {
   // Sort by score descending and take top 3-5
   const sorted = scored.sort((a, b) => b.score - a.score);
 
-  // Take top 5 if they have scores > 0, otherwise fallback
-  let selected = sorted.filter(t => t.score > 0).slice(0, 5);
-
-  // Fallback: if no strong matches, use generic personas
-  if (selected.length < 3) {
-    const fallbackIds = ["working-professional", "startup-founder", "content-creator", "marketing-executive"];
-    const fallbacks = PERSONA_TEMPLATES.filter(t => fallbackIds.includes(t.id));
-    selected = [...selected, ...fallbacks].slice(0, 4);
-  }
-
-  return selected.map(({ score, ...rest }) => rest);
+  // Take top 5 if they have scores > 0, otherwise return empty for Zero-Shot generation
+  return sorted.filter(t => t.score > 0).slice(0, 5).map(({ score, ...rest }) => rest);
 }
 
 module.exports = personaTemplateLoader;

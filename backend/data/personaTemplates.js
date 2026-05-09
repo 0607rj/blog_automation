@@ -265,6 +265,71 @@ const PERSONA_TEMPLATES = [
     searchIntent: ["how to grow on YouTube", "content creation tips for beginners", "how to monetize social media"],
     buyingBehavior: "Invests in tools and courses that save time, influenced by creator testimonials",
     psychologicalTriggers: ["Growth hack case studies", "Creator income reports", "Tool recommendations from top creators"]
+  },
+  {
+    id: "real-estate-agent",
+    label: "Real Estate Agent",
+    domains: ["real estate", "property", "investment", "brokerage", "housing"],
+    painPoints: ["Generating high-quality leads", "High competition in local market", "Keeping up with market trends", "Managing client expectations"],
+    emotions: ["Competitive", "Ambitious", "Stress", "Persistence"],
+    fears: ["Market crash", "Losing commissions to online platforms", "Inventory shortage"],
+    goals: ["Close 5+ deals monthly", "Build a strong personal brand", "Automate lead follow-ups"],
+    behaviorPatterns: ["Always on phone", "Active on Instagram/Facebook", "Attends local networking events"],
+    searchIntent: ["how to get real estate leads", "best real estate marketing tools", "real estate trends 2024"],
+    buyingBehavior: "ROI-driven, willing to pay for lead-gen tools, values speed",
+    psychologicalTriggers: ["Lead volume proof", "Success testimonials", "Exclusive market data"]
+  },
+  {
+    id: "legal-professional",
+    label: "Legal Professional",
+    domains: ["legal", "law", "compliance", "corporate", "attorney"],
+    painPoints: ["Extreme workload and long hours", "Managing complex documentation", "Client acquisition for small firms", "Staying updated on changing laws"],
+    emotions: ["Pressure", "Analytical", "Caution", "Authority"],
+    fears: ["Legal malpractice", "Losing reputation", "Technological disruption of law"],
+    goals: ["Reduce manual research time", "Scale legal practice", "Ensure 100% compliance"],
+    behaviorPatterns: ["Reads legal journals", "Uses specialized research tools", "Values confidentiality and precision"],
+    searchIntent: ["legal automation tools", "how to grow a law firm", "latest compliance regulations"],
+    buyingBehavior: "Extremely cautious, needs high security proof, long decision cycle",
+    psychologicalTriggers: ["Security certifications", "Efficiency data", "Peer endorsements"]
+  },
+  {
+    id: "travel-enthusiast",
+    label: "Travel Enthusiast",
+    domains: ["travel", "tourism", "lifestyle", "adventure", "vacation"],
+    painPoints: ["Hidden travel costs", "Difficulty planning complex trips", "Generic tourist traps", "Budget constraints"],
+    emotions: ["Wanderlust", "Excitement", "FOMO", "Freedom"],
+    fears: ["Safety issues abroad", "Wasting money on bad experiences", "Missing out on authentic culture"],
+    goals: ["Visit 5 new countries a year", "Find hidden gems", "Travel luxuriously on a budget"],
+    behaviorPatterns: ["Browses Instagram for destinations", "Reads travel blogs", "Member of travel forums"],
+    searchIntent: ["best hidden gems in Europe", "budget luxury travel tips", "solo travel safety guide"],
+    buyingBehavior: "Experience-driven, influenced by visual content and reviews",
+    psychologicalTriggers: ["Stunning visuals", "Authenticity proof", "Limited-time deals"]
+  },
+  {
+    id: "busy-parent",
+    label: "Busy Parent",
+    domains: ["parenting", "family", "education", "home", "lifestyle"],
+    painPoints: ["Lack of time for self-care", "Managing kids' schedules", "Financial planning for family", "Worried about child's future"],
+    emotions: ["Love", "Guilt", "Exhaustion", "Protective"],
+    fears: ["Failing as a parent", "Safety of children", "Not being able to afford quality education"],
+    goals: ["Find work-life balance", "Provide best opportunities for kids", "Simplify household management"],
+    behaviorPatterns: ["Researches on mobile during breaks", "Active in parenting groups", "Seeks quick, actionable advice"],
+    searchIntent: ["quick healthy meals for kids", "best educational toys", "how to save for child's college"],
+    buyingBehavior: "Practical, values time-saving, influenced by 'mom-bloggers' or peer reviews",
+    psychologicalTriggers: ["Safety first", "Time-saving", "Peace of mind"]
+  },
+  {
+    id: "wellness-seeker",
+    label: "Wellness Seeker",
+    domains: ["health", "wellness", "mental health", "meditation", "yoga", "nutrition"],
+    painPoints: ["High stress levels", "Poor sleep quality", "Conflicting health advice", "Difficulty maintaining habits"],
+    emotions: ["Seeking peace", "Frustration with health", "Hopeful", "Self-aware"],
+    fears: ["Chronic illness", "Mental burnout", "Aging poorly"],
+    goals: ["Achieve mental clarity", "Improve physical health naturally", "Reduce anxiety"],
+    behaviorPatterns: ["Practices yoga or meditation", "Uses health tracking apps", "Buys organic/natural products"],
+    searchIntent: ["how to reduce stress naturally", "best meditation apps", "anti-inflammatory diet guide"],
+    buyingBehavior: "Values ingredients and ethics, seeks holistic solutions",
+    psychologicalTriggers: ["Holistic proof", "Ingredient transparency", "Before/After mental states"]
   }
 ];
 
