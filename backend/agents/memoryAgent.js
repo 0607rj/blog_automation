@@ -2,14 +2,16 @@ const Blog = require("../models/Blog");
 const MemoryContext = require("../models/MemoryContext");
 
 /**
- * Memory Agent — Retrieves historical context from MongoDB.
+ * Memory Agent — STEP 6 of the pipeline.
+ * Retrieves historical context from MongoDB.
  * NO Groq call — purely database-driven.
- * Input: niche
- * Output: past titles, used keywords, categories, avoid-topics
+ * Prevents repetitive content generation.
  */
-async function memoryAgent(niche) {
-  // Get existing memory context for this niche
-  let memory = await MemoryContext.findOne({ niche: niche.toUpperCase() });
+async function memoryAgent(domain) {
+  const domainKey = (domain || "GENERAL").toUpperCase();
+
+  // Get existing memory context for this domain
+  let memory = await MemoryContext.findOne({ niche: domainKey });
 
   // If no memory exists, build it from existing blogs
   if (!memory) {
@@ -21,6 +23,8 @@ async function memoryAgent(niche) {
       usedCategories: [...new Set(existingBlogs.map(b => b.category).filter(Boolean))],
       avoidTopics: [],
       strategyHistory: [],
+      successfulTopics: [],
+      successfulKeywords: [],
     };
   }
 
@@ -30,6 +34,8 @@ async function memoryAgent(niche) {
     previousCategories: memory.usedCategories || [],
     avoidTopics: memory.avoidTopics || [],
     strategyHistory: memory.strategyHistory || [],
+    successfulTopics: memory.successfulTopics || [],
+    successfulKeywords: memory.successfulKeywords || [],
     totalBlogsGenerated: (memory.generatedTitles || []).length,
   };
 }
@@ -37,19 +43,21 @@ async function memoryAgent(niche) {
 /**
  * Update memory after a blog is generated.
  */
-async function updateMemory(niche, blogTitle, keywords, category, strategy) {
-  const nicheKey = niche.toUpperCase();
+async function updateMemory(domain, blogTitle, keywords, category, strategy) {
+  const domainKey = (domain || "GENERAL").toUpperCase();
 
-  let memory = await MemoryContext.findOne({ niche: nicheKey });
+  let memory = await MemoryContext.findOne({ niche: domainKey });
 
   if (!memory) {
     memory = new MemoryContext({
-      niche: nicheKey,
+      niche: domainKey,
       generatedTitles: [],
       usedKeywords: [],
       usedCategories: [],
       avoidTopics: [],
       strategyHistory: [],
+      successfulTopics: [],
+      successfulKeywords: [],
     });
   }
 

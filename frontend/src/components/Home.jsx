@@ -3,66 +3,67 @@ import { Link } from "react-router-dom";
 import api from "../api";
 
 const PIPELINE_STEPS = [
-  { icon: "👤", label: "Persona Agent",   desc: "Identifies buyer persona, pain points, emotions & search intent" },
-  { icon: "🔍", label: "Research Agent",  desc: "Finds trending keywords, topic clusters & AI search queries" },
-  { icon: "⚔️", label: "Competitor Agent", desc: "Detects content gaps & outranking opportunities" },
-  { icon: "🧠", label: "Memory Agent",    desc: "Retrieves past strategies from MongoDB — avoids repetition" },
-  { icon: "🎯", label: "Orchestrator",    desc: "Combines all insights into a precise content blueprint" },
-  { icon: "✍️", label: "Blog Generator",  desc: "Writes SEO-optimized, audience-specific, human-like content" },
+  { icon: "🔎", label: "Domain Detection",   desc: "Auto-detects your business domain using semantic AI analysis" },
+  { icon: "📋", label: "Persona Loader",      desc: "Loads relevant audience templates from a curated library of 20" },
+  { icon: "👤", label: "Persona Agent",        desc: "Synthesizes unified audience psychology — pain points, fears, triggers" },
+  { icon: "🔍", label: "Research Agent",       desc: "Finds trending keywords, SEO data & AI-search queries" },
+  { icon: "⚔️", label: "Competitor Agent",     desc: "Analyzes competitor websites for content gaps & ranking opportunities" },
+  { icon: "🧠", label: "Memory Agent",         desc: "Retrieves past strategies from MongoDB — avoids repetition" },
+  { icon: "🎯", label: "Orchestrator",         desc: "Combines all intelligence into a precise content strategy" },
+  { icon: "✍️", label: "Content Generator",    desc: "Writes SEO + AI-search optimized, audience-aware content" },
+  { icon: "✅", label: "Validation Layer",     desc: "Verifies quality, keyword integration & production readiness" },
 ];
 
 const FEATURES = [
   {
-    icon: "⚡",
-    title: "Real-Time SSE Streaming",
-    desc: "Watch your blog appear word-by-word via Server-Sent Events. No loading spinner — the content types itself live.",
-    tag: "Backend · EventSource API",
+    icon: "🏢",
+    title: "Business Intelligence Input",
+    desc: "Provide your company, product, features, competitors, and goals — the system understands your business automatically.",
+    tag: "Domain Detection · Semantic AI",
   },
   {
     icon: "🤖",
-    title: "Multi-Agent AI Pipeline",
-    desc: "6 specialized AI agents collaborate in sequence before a single word is written. Each agent passes intelligence to the next.",
-    tag: "LLaMA 3.1 · Groq · Orchestration",
+    title: "9-Agent AI Pipeline",
+    desc: "9 specialized agents collaborate in sequence. Each passes enriched intelligence to the next before a single word is written.",
+    tag: "LLaMA 3.1 · Groq · Multi-Agent",
+  },
+  {
+    icon: "👤",
+    title: "20 Persona Templates",
+    desc: "Pre-researched audience profiles with emotional, behavioral, and psychological data. No random generation — stable intelligence.",
+    tag: "Template Library · Psychology",
   },
   {
     icon: "🧠",
     title: "Long-Term Memory",
-    desc: "MongoDB persists every blog title, keyword, and strategy. The Memory Agent reads this history to avoid ever repeating content.",
+    desc: "MongoDB persists every blog, keyword, and strategy. The Memory Agent reads this history to avoid repeating content.",
     tag: "MongoDB · Context Persistence",
   },
   {
-    icon: "📂",
-    title: "Dynamic Category System",
-    desc: "Categories are auto-detected by AI and created on the fly if they don't exist. Browse the archive by any category instantly.",
-    tag: "Mongoose · distinct()",
+    icon: "⚔️",
+    title: "Competitor Analysis",
+    desc: "Provide competitor websites and the AI finds keyword gaps, missing emotional angles, and ranking opportunities.",
+    tag: "Competitive Intelligence",
   },
   {
-    icon: "🏷️",
-    title: "Auto-Tagging System",
-    desc: "The AI automatically extracts 4–5 relevant keyword tags per blog for searchability and discoverability.",
-    tag: "AI Extraction · Marker Parsing",
+    icon: "✅",
+    title: "Validation Layer",
+    desc: "Every blog is validated for keyword integration, structure quality, word count, and repetition before publishing.",
+    tag: "Quality Assurance · Rule-based",
   },
   {
     icon: "🌐",
-    title: "Dynamic URL Detection",
-    desc: "The app auto-detects whether it's running locally or on production and switches the API URL accordingly — zero manual config.",
-    tag: "window.location · Vite Env",
+    title: "AI-Search Optimization",
+    desc: "Content is optimized for Google, ChatGPT, Perplexity, and AI Overview — not just traditional SEO.",
+    tag: "SEO + AEO · Future-proof",
   },
   {
-    icon: "🔗",
-    title: "Related Content Engine",
-    desc: "Every blog article shows 3 related posts from the same category — fetched in a single optimized MongoDB query.",
-    tag: "MongoDB · Category Filtering",
-  },
-  {
-    icon: "👍",
-    title: "Like & Dislike System",
-    desc: "Readers can react to posts. MongoDB's $inc operator handles atomic counter updates with zero race conditions.",
-    tag: "PATCH · $inc · REST API",
+    icon: "⚡",
+    title: "Real-Time SSE Streaming",
+    desc: "Watch your blog appear word-by-word via Server-Sent Events. No loading spinner — content types itself live.",
+    tag: "SSE · Streaming API",
   },
 ];
-
-// ─── Constants removed for cleaner UI ───
 
 export default function Home() {
   const [blogCount, setBlogCount] = useState("...");
@@ -101,21 +102,21 @@ export default function Home() {
 
         <div className="max-w-5xl space-y-10 relative z-10">
           <div className="inline-flex items-center gap-2 bg-stone-100 px-5 py-2 rounded-full mb-4">
-            <div className="w-2 h-2 bg-stone-400 rounded-full" />
+            <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-600">
-              The Manuscript Studio
+              Autonomous Marketing Engine
             </span>
           </div>
 
           <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.85]">
-            Where Writing <br />
-            Begins to <span className="text-stone-300 italic serif font-normal">Feel.</span>
+            Strategic AI <br />
+            <span className="text-stone-300 italic serif font-normal">Content.</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-stone-500 leading-relaxed max-w-3xl mx-auto font-medium serif">
-            An autonomous editorial marketing engine. 6 specialized agents collaborate to 
-            understand your audience, research trends, analyze competitors — then write 
-            content that <em>actually ranks.</em>
+            Not another AI blog generator. A 9-agent autonomous marketing engine that understands
+            your business, audience psychology, competitors — then writes content that{" "}
+            <em>actually ranks on Google, ChatGPT, and Perplexity.</em>
           </p>
 
           {/* Live Stats */}
@@ -131,13 +132,13 @@ export default function Home() {
             </div>
             <div className="w-px h-12 bg-stone-100" />
             <div className="text-center">
-              <p className="text-5xl font-black text-stone-900">6</p>
+              <p className="text-5xl font-black text-stone-900">9</p>
               <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">AI Agents</p>
             </div>
             <div className="w-px h-12 bg-stone-100" />
             <div className="text-center">
-              <p className="text-5xl font-black text-stone-900">∞</p>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">Memory Context</p>
+              <p className="text-5xl font-black text-stone-900">20</p>
+              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">Persona Templates</p>
             </div>
           </div>
 
@@ -146,7 +147,7 @@ export default function Home() {
               to="/pipeline"
               className="bg-purple-600 text-white px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-purple-700 transition-all shadow-xl shadow-purple-200 hover:-translate-y-1 active:scale-95"
             >
-              Create New Blog
+              Launch Pipeline
             </Link>
             <Link
               to="/blogs"
@@ -158,7 +159,7 @@ export default function Home() {
               onClick={() => document.getElementById("pipeline-section").scrollIntoView({ behavior: "smooth" })}
               className="border-2 border-stone-200 text-stone-900 px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:border-stone-900 transition-all"
             >
-              See How It Works
+              See Architecture
             </button>
           </div>
         </div>
@@ -171,20 +172,20 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-purple-600 mb-4">The Architecture</p>
-            <h2 className="text-4xl md:text-6xl font-bold serif mb-6">6 Agents. One Perfect Blog.</h2>
+            <h2 className="text-4xl md:text-6xl font-bold serif mb-6">9 Agents. One Strategic Blog.</h2>
             <p className="text-stone-500 serif text-xl max-w-2xl mx-auto">
-              Unlike simple prompt-response AI tools, every blog goes through a full 
+              Unlike simple prompt-response AI tools, every blog goes through a full
               intelligence pipeline before a single word is written.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Animated steps */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {PIPELINE_STEPS.map((step, idx) => (
                 <div
                   key={step.label}
-                  className={`flex items-center gap-5 p-5 rounded-2xl transition-all duration-500 ${
+                  className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 ${
                     idx === activeStep
                       ? "bg-white shadow-lg border border-purple-100 scale-[1.02]"
                       : idx < activeStep
@@ -192,10 +193,10 @@ export default function Home() {
                       : "bg-white border border-stone-100 opacity-50"
                   }`}
                 >
-                  <span className="text-2xl">{step.icon}</span>
+                  <span className="text-xl">{step.icon}</span>
                   <div className="flex-1">
                     <p className="font-bold text-stone-900 text-sm">{step.label}</p>
-                    <p className="text-xs text-stone-500 serif leading-relaxed">{step.desc}</p>
+                    <p className="text-[11px] text-stone-500 serif leading-relaxed">{step.desc}</p>
                   </div>
                   {idx < activeStep && (
                     <span className="text-emerald-500 font-bold text-sm flex-shrink-0">✓</span>
@@ -211,29 +212,33 @@ export default function Home() {
             <div className="bg-stone-900 rounded-[2.5rem] p-12 text-white flex flex-col justify-between">
               <div className="space-y-6">
                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">
-                  Why Multi-Agent?
+                  Why This Architecture?
                 </p>
                 <h3 className="text-3xl font-bold serif italic leading-relaxed">
                   "Single-prompt AI generates generic content. Multi-agent AI generates{" "}
-                  <span className="text-stone-300">strategic</span> content."
+                  <span className="text-purple-400">strategic</span> content."
                 </h3>
               </div>
               <div className="mt-10 space-y-4 text-sm text-stone-400 serif">
                 <div className="flex items-start gap-3">
                   <span className="text-purple-400 font-bold mt-0.5">→</span>
-                  <span>Each agent has ONE job and ONE context — no confusion</span>
+                  <span>Domain detection corrects user input automatically</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-purple-400 font-bold mt-0.5">→</span>
-                  <span>Every agent passes enriched context to the next</span>
+                  <span>20 curated persona templates replace random generation</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-purple-400 font-bold mt-0.5">→</span>
-                  <span>The final blog has 5 layers of intelligence baked in</span>
+                  <span>Competitor analysis finds gaps others miss</span>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="text-purple-400 font-bold mt-0.5">→</span>
-                  <span>Memory agent ensures zero repetition across all generations</span>
+                  <span>Memory agent ensures zero repetition across generations</span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="text-purple-400 font-bold mt-0.5">→</span>
+                  <span>Validation layer guarantees production quality</span>
                 </div>
               </div>
               <div className="mt-10 pt-6 border-t border-stone-800">
@@ -250,7 +255,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════════════════════════════
-          SECTION 3: FEATURES GRID (8 features)
+          SECTION 3: FEATURES GRID
           ════════════════════════════════════════ */}
       <section className="py-40 px-6">
         <div className="max-w-6xl mx-auto">
@@ -258,7 +263,7 @@ export default function Home() {
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400 mb-4">Platform Features</p>
             <h2 className="text-4xl md:text-6xl font-bold serif">Built for Production.</h2>
             <p className="text-stone-500 serif text-xl max-w-2xl mx-auto mt-6">
-              Every feature was designed, built, and debugged from scratch — no low-code tools.
+              Every feature was designed for real-world marketing teams — not toy demos.
             </p>
           </div>
 
@@ -294,7 +299,7 @@ export default function Home() {
               <div className="text-3xl">🌿</div>
               <h4 className="font-bold text-stone-900 text-xl">Human Nuance</h4>
               <p className="text-sm text-stone-500 serif leading-relaxed">
-                We capture the subtle emotional triggers that turn a casual reader into a lifelong follower. 
+                We capture the subtle emotional triggers that turn a casual reader into a lifelong follower.
                 Intelligence meets intuition.
               </p>
             </div>
@@ -302,7 +307,7 @@ export default function Home() {
               <div className="text-3xl">🕯️</div>
               <h4 className="font-bold text-stone-900 text-xl">Atmospheric Tone</h4>
               <p className="text-sm text-stone-500 serif leading-relaxed">
-                Every blog is crafted to maintain a consistent, high-end editorial tone that reflects 
+                Every blog is crafted to maintain a consistent, high-end editorial tone that reflects
                 your brand's authority and sophistication.
               </p>
             </div>
@@ -310,7 +315,7 @@ export default function Home() {
               <div className="text-3xl">📖</div>
               <h4 className="font-bold text-stone-900 text-xl">Lasting Narrative</h4>
               <p className="text-sm text-stone-500 serif leading-relaxed">
-                We don't just generate content; we build a cohesive collection of thoughts that 
+                We don't just generate content; we build a cohesive collection of thoughts that
                 matures and grows alongside your brand.
               </p>
             </div>
@@ -319,7 +324,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════════════════════════════
-          SECTION 5: FINAL CTA (Simplified)
+          SECTION 5: FINAL CTA
           ════════════════════════════════════════ */}
       <section className="py-40 bg-stone-50 px-6">
         <div className="max-w-6xl mx-auto text-center">
@@ -329,7 +334,7 @@ export default function Home() {
             to="/pipeline"
             className="inline-block bg-purple-600 text-white px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-purple-700 transition-all shadow-xl shadow-purple-200"
           >
-            Create New Blog →
+            Launch AI Pipeline →
           </Link>
         </div>
       </section>

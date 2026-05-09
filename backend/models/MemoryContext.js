@@ -7,6 +7,8 @@ const memoryContextSchema = new mongoose.Schema({
   usedCategories: [String],
   avoidTopics: [String],
   strategyHistory: [String],
+  successfulTopics: [String],
+  successfulKeywords: [String],
   lastUpdated: { type: Date, default: Date.now },
 });
 

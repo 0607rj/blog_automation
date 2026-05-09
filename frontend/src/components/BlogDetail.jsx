@@ -51,9 +51,9 @@ export default function BlogDetail() {
     </div>
   );
 
-  // Calculate reading time (avg 200 words/min)
-  const wordCount = blog.content?.split(" ").length || 0;
-  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+  // Calculate reading time
+  const wordCount = blog.wordCount || blog.content?.split(" ").length || 0;
+  const readingTime = blog.readingTime || Math.max(1, Math.ceil(wordCount / 200));
 
   return (
     <article className="max-w-4xl mx-auto py-20 px-6 animate-fade-in">
@@ -63,7 +63,7 @@ export default function BlogDetail() {
       </Link>
 
       <header className="mb-16">
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-6 flex-wrap">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">{blog.category}</span>
           <span className="w-1 h-1 bg-stone-300 rounded-full" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
@@ -73,15 +73,37 @@ export default function BlogDetail() {
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
             {readingTime} min read
           </span>
+          <span className="w-1 h-1 bg-stone-300 rounded-full" />
+          <span className="text-xs font-bold uppercase tracking-[0.2em] text-stone-400">
+            {wordCount} words
+          </span>
+          {blog.validationScore > 0 && (
+            <>
+              <span className="w-1 h-1 bg-stone-300 rounded-full" />
+              <span className="text-xs font-bold uppercase tracking-[0.2em] text-purple-500">
+                Quality: {blog.validationScore}%
+              </span>
+            </>
+          )}
         </div>
+
         <h1 className="text-5xl md:text-7xl font-bold text-stone-900 leading-tight serif mb-8">
           {blog.title}
         </h1>
+
         <p className="text-2xl text-stone-500 italic serif leading-relaxed border-l-4 border-stone-100 pl-8">
           {blog.summary}
         </p>
 
-        {/* ── Auto Tags ── */}
+        {/* SEO Meta Description */}
+        {blog.metaDescription && (
+          <div className="mt-6 bg-purple-50 border border-purple-100 rounded-2xl px-6 py-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-purple-500 mb-1">Meta Description</p>
+            <p className="text-sm text-stone-600 serif">{blog.metaDescription}</p>
+          </div>
+        )}
+
+        {/* Auto Tags */}
         {blog.tags && blog.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-8">
             {blog.tags.map((tag, i) => (
@@ -94,20 +116,58 @@ export default function BlogDetail() {
             ))}
           </div>
         )}
+
+        {/* Business Context */}
+        {blog.businessContext?.companyName && (
+          <div className="mt-6 flex items-center gap-4 text-xs text-stone-400">
+            <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
+              🏢 {blog.businessContext.companyName}
+            </span>
+            {blog.businessContext.domain && (
+              <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
+                🔎 {blog.businessContext.domain}
+              </span>
+            )}
+            {blog.businessContext.industry && (
+              <span className="bg-stone-100 px-3 py-1.5 rounded-full font-bold">
+                🏭 {blog.businessContext.industry}
+              </span>
+            )}
+          </div>
+        )}
       </header>
 
+      {/* ── Blog Content ── */}
       <div className="prose prose-stone max-w-none">
         <div className="text-xl text-stone-800 leading-[1.9] whitespace-pre-line space-y-8 serif">
           {blog.content}
         </div>
       </div>
 
+      {/* ── FAQ Section ── */}
+      {blog.faq && blog.faq.length > 0 && (
+        <section className="mt-20 pt-16 border-t border-stone-100">
+          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-purple-600 mb-8">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-6">
+            {blog.faq.map((item, i) => (
+              <div key={i} className="bg-stone-50 rounded-2xl p-6 border border-stone-100">
+                <p className="font-bold text-stone-900 mb-2 text-base">{item.question}</p>
+                <p className="text-stone-600 serif text-sm leading-relaxed">{item.answer}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Footer ── */}
       <footer className="mt-32 pt-16 border-t border-stone-100 flex flex-col md:flex-row justify-between items-center gap-12">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-stone-900 rounded-full flex items-center justify-center text-white text-xs font-bold uppercase">E</div>
           <div>
             <p className="text-sm font-bold">The Manuscript Editor</p>
-            <p className="text-xs text-stone-400">Digital Publication System</p>
+            <p className="text-xs text-stone-400">Autonomous AI Marketing Engine</p>
           </div>
         </div>
 

@@ -2,46 +2,64 @@ const Groq = require("groq-sdk");
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
- * Research Agent — Performs contextual + SEO research.
- * Input: persona profile, niche
- * Output: keywords, search queries, topic clusters, intent analysis
+ * Research Agent — STEP 4 of the pipeline.
+ * Performs contextual + SEO + AI-search research.
+ * Input: persona insights, product context, business goals
+ * Output: keywords, trending topics, contextual queries, topic clusters, search patterns
  */
-async function researchAgent(personaProfile, niche) {
-  const prompt = `You are an SEO and content research specialist. Based on the persona and niche below, perform contextual research.
+async function researchAgent(personaProfile, businessContext) {
+  const prompt = `You are an SEO and content research specialist optimizing for BOTH traditional search engines AND AI search systems (ChatGPT, Perplexity, Google AI Overview).
 
-NICHE: ${niche}
-TARGET AUDIENCE: ${personaProfile.buyerPersona || "General audience"}
-THEIR PAIN POINTS: ${(personaProfile.painPoints || []).join(", ")}
-WHAT THEY SEARCH FOR: ${(personaProfile.searchIntent || []).join(", ")}
+=== BUSINESS CONTEXT ===
+Company: ${businessContext.companyName || "General"}
+Product: ${businessContext.productDescription || "General"}
+Features: ${(businessContext.productFeatures || []).join(", ") || "Not specified"}
+Business Goal: ${businessContext.businessGoal || "Generate traffic and leads"}
+Target Region: ${businessContext.targetRegion || "Global"}
 
-Perform research and respond in this EXACT format:
+=== AUDIENCE INTELLIGENCE ===
+Ideal Reader: ${personaProfile.buyerPersona || "General audience"}
+Pain Points: ${(personaProfile.painPoints || []).join(", ")}
+Goals: ${(personaProfile.goals || []).join(", ")}
+What They Search: ${(personaProfile.searchIntent || []).join(", ")}
+Psychological Triggers: ${(personaProfile.psychologicalTriggers || []).join(", ")}
+
+Perform deep contextual and SEO research. Think about:
+1. What would this audience type into Google?
+2. What would they ask ChatGPT or Perplexity?
+3. What trending topics relate to their pain points?
+4. What keyword clusters can we own?
+
+Respond in this EXACT format:
 
 [BEGIN_RESEARCH]
-TRENDING_KEYWORDS: (comma-separated list of 6-8 high-value keywords for this niche)
-SEARCH_QUERIES: (comma-separated list of 5-6 questions users ask on Google, ChatGPT, and Perplexity about this niche)
+KEYWORDS: (comma-separated list of 6-8 high-value SEO keywords)
+TRENDING_TOPICS: (comma-separated list of 4-5 trending topics in this space)
+CONTEXTUAL_QUERIES: (comma-separated list of 5-6 natural-language questions users ask on AI search platforms)
 TOPIC_CLUSTERS: (comma-separated list of 4-5 related topic groups for content strategy)
-USER_INTENT: (2-3 sentences explaining what this audience really wants when they search)
+SEARCH_PATTERNS: (2-3 sentences explaining how this audience searches and what intent drives them)
 [END_RESEARCH]`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
-      { role: "system", content: "You are a senior SEO researcher. Provide real, specific, actionable research. Optimize for both traditional search engines AND AI search engines like Perplexity." },
+      { role: "system", content: "You are a senior SEO researcher and AI-search optimization specialist. Provide real, specific, actionable research. Focus on intent-based research and contextual search understanding. Think like modern AI search systems." },
       { role: "user", content: prompt },
     ],
     temperature: 0.7,
-    max_tokens: 800,
+    max_tokens: 1000,
   });
 
   const raw = completion.choices[0].message.content;
   const block = extractBlock(raw, "[BEGIN_RESEARCH]", "[END_RESEARCH]");
-  if (!block) return { trendingKeywords: [], searchQueries: [], topicClusters: [], userIntentAnalysis: "" };
+  if (!block) return { keywords: [], trendingTopics: [], contextualQueries: [], topicClusters: [], searchPatterns: "" };
 
   return {
-    trendingKeywords: extractList(block, "TRENDING_KEYWORDS"),
-    searchQueries: extractList(block, "SEARCH_QUERIES"),
+    keywords: extractList(block, "KEYWORDS"),
+    trendingTopics: extractList(block, "TRENDING_TOPICS"),
+    contextualQueries: extractList(block, "CONTEXTUAL_QUERIES"),
     topicClusters: extractList(block, "TOPIC_CLUSTERS"),
-    userIntentAnalysis: extractField(block, "USER_INTENT"),
+    searchPatterns: extractField(block, "SEARCH_PATTERNS"),
   };
 }
 
