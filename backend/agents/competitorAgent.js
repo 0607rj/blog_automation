@@ -3,65 +3,78 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
  * Competitor Analysis Agent — STEP 5 of the pipeline.
- * Analyzes competitors and finds strategic ranking opportunities.
- * Input: competitor websites, persona insights, research data
- * Output: keyword gaps, missing topics, ranking opportunities, competitor weaknesses
+ * Analyzes competitors to find deep psychological gaps, persuasion failures, and emotional opportunities.
  */
 async function competitorAgent(competitorWebsites, personaProfile, researchData) {
-  const prompt = `You are a competitive content intelligence analyst. Analyze the competitors below and identify strategic content opportunities.
+  const prompt = `You are a competitive intelligence strategist specializing in behavioral psychology and conversion copywriting. Analyze the competitors below and identify strategic emotional gaps.
 
 === COMPETITOR WEBSITES ===
 ${(competitorWebsites || []).join(", ") || "No specific competitors provided — analyze general competition in this niche"}
 
 === AUDIENCE INTELLIGENCE ===
 Reader Profile: ${personaProfile.buyerPersona || "General audience"}
-Pain Points: ${(personaProfile.painPoints || []).join(", ")}
-Fears: ${(personaProfile.fears || []).join(", ")}
-Search Intent: ${(personaProfile.searchIntent || []).join(", ")}
+Visible Pain Symptoms: ${(personaProfile.visiblePainSymptoms || []).join(", ")}
+Hidden Fears: ${(personaProfile.hiddenFears || []).join(", ")}
+Objections: ${(personaProfile.objections || []).join(", ")}
 
 === RESEARCH DATA ===
-Keywords: ${(researchData.keywords || []).join(", ")}
-Trending Topics: ${(researchData.trendingTopics || []).join(", ")}
-Contextual Queries: ${(researchData.contextualQueries || []).join(", ")}
+Emotional Search Patterns: ${(researchData.emotionalSearchPatterns || []).join(", ")}
+Trust Signals Required: ${(researchData.trustSignals || []).join(", ")}
 
 Based on your knowledge of these competitors and the niche, identify:
-1. What keywords are these competitors NOT ranking for?
-2. What emotional angles are they ignoring?
-3. What content topics are they missing entirely?
-4. Where are they weak so we can outperform them?
+1. What emotional positioning are competitors using, and what are they ignoring?
+2. What trust gaps are they leaving that we can fill?
+3. What objections are they failing to solve?
+4. What emotional hooks do they completely miss?
+5. Where does their content feel robotic, generic, or emotionally tone-deaf?
 
 Respond in this EXACT format:
 
 [BEGIN_ANALYSIS]
-KEYWORD_GAPS: (comma-separated list of 4-5 keywords competitors are missing)
-MISSING_TOPICS: (comma-separated list of 4-5 content topics competitors don't cover)
-RANKING_OPPORTUNITIES: (comma-separated list of 3-4 specific angles we can win on)
-COMPETITOR_WEAKNESSES: (comma-separated list of 4-5 weaknesses in competitor content)
-UNDERSERVED_INTENT: (comma-separated list of 3-4 audience needs that competitors ignore)
-STRATEGY: (2-3 sentences on how our content should differentiate and outperform)
+EMOTIONAL_GAPS: (comma-separated list of 3-4 emotions competitors fail to address)
+PERSUASION_GAPS: (comma-separated list of 3-4 missing persuasion elements)
+TRUST_GAPS: (comma-separated list of 3-4 ways competitors fail to build trust)
+TRANSFORMATION_GAPS: (comma-separated list of 2-3 transformation stories they miss)
+COMPETITOR_WEAKNESSES: (comma-separated list of 3-4 structural or emotional weaknesses in their content)
+DIFFERENTIATION_OPPORTUNITY: (2-3 sentences on exactly how we should position ourselves to beat them emotionally)
 [END_ANALYSIS]`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
-      { role: "system", content: "You are a competitive intelligence analyst. Focus on differentiation. Identify what competitors are NOT doing well. Focus on outperforming competitors strategically through content gaps and emotional angles." },
+      { role: "system", content: "You are a psychological competitive intelligence analyst. Do not focus on SEO keyword gaps. Focus on emotional gaps, trust failures, and persuasion weaknesses of the competitors." },
       { role: "user", content: prompt },
     ],
     temperature: 0.7,
-    max_tokens: 1000,
+    max_tokens: 1200,
   });
 
   const raw = completion.choices[0].message.content;
   const block = extractBlock(raw, "[BEGIN_ANALYSIS]", "[END_ANALYSIS]");
-  if (!block) return { keywordGaps: [], missingTopics: [], rankingOpportunities: [], competitorWeaknesses: [], underservedIntent: [], strategyNotes: "" };
+  
+  if (!block) {
+    return {
+      emotionalGaps: ["Empathy", "Understanding deep fears"],
+      persuasionGaps: ["Lack of clear ROI", "No strong objection handling"],
+      trustGaps: ["No verifiable proof", "Corporate speak"],
+      transformationGaps: ["Focusing on features instead of the after-state"],
+      competitorWeaknesses: ["Generic content", "Robotic tone"],
+      strategyNotes: "Focus on deep empathy and clear transformation rather than feature lists.",
+      keywordGaps: [], // For backward compatibility if any older agents need it
+      missingTopics: []
+    };
+  }
 
   return {
-    keywordGaps: extractList(block, "KEYWORD_GAPS"),
-    missingTopics: extractList(block, "MISSING_TOPICS"),
-    rankingOpportunities: extractList(block, "RANKING_OPPORTUNITIES"),
+    emotionalGaps: extractList(block, "EMOTIONAL_GAPS"),
+    persuasionGaps: extractList(block, "PERSUASION_GAPS"),
+    trustGaps: extractList(block, "TRUST_GAPS"),
+    transformationGaps: extractList(block, "TRANSFORMATION_GAPS"),
     competitorWeaknesses: extractList(block, "COMPETITOR_WEAKNESSES"),
-    underservedIntent: extractList(block, "UNDERSERVED_INTENT"),
-    strategyNotes: extractField(block, "STRATEGY"),
+    strategyNotes: extractField(block, "DIFFERENTIATION_OPPORTUNITY"),
+    // Keep these empty arrays for backward compatibility with orchestrator if needed
+    keywordGaps: [],
+    missingTopics: extractList(block, "TRANSFORMATION_GAPS")
   };
 }
 

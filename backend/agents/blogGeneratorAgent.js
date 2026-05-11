@@ -4,63 +4,59 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 /**
  * Content Generation Agent — STEP 8 of the pipeline.
  * Generates final production-level optimized content.
- * Input: orchestrator strategy + persona psychology + research insights + competitor gaps
- * Output: SEO title, meta description, H1, H2 sections, body, CTA, conclusion, tags, FAQ
+ * Focuses on human-level emotional persuasion writing.
  */
 async function blogGeneratorAgent(blueprint, persona, research, competitor) {
-  const prompt = `You are an expert content writer creating a production-quality blog post. This content must feel HUMAN-WRITTEN, emotionally intelligent, and optimized for Google, ChatGPT, Perplexity, and AI search systems.
+  const prompt = `You are a world-class conversion copywriter and persuasion psychologist. Write a production-quality, deeply emotional, and highly persuasive blog post.
+This content must feel 100% HUMAN-WRITTEN. It should not sound like generic AI.
 
 === STRATEGIC BLUEPRINT ===
 TITLE: ${blueprint.blogTitle}
-EMOTIONAL TONE: ${blueprint.emotionalTone}
-TARGET KEYWORDS: ${(blueprint.targetKeywords || []).join(", ")}
-CONTENT ANGLE: ${blueprint.contentAngle}
+EMOTIONAL HOOK: ${blueprint.emotionalHook || blueprint.emotionalTone}
+TRANSFORMATION NARRATIVE: ${blueprint.transformationStory || blueprint.contentAngle}
+TRUST STRATEGY: ${blueprint.trustBuildingStrategy}
 SECTIONS TO COVER: ${(blueprint.sectionsToCover || []).join(", ")}
-CTA STRATEGY: ${blueprint.ctaStrategy || "Encourage engagement"}
+CTA STRATEGY: ${blueprint.ctaStrategy}
+TARGET KEYWORDS: ${(blueprint.targetKeywords || []).join(", ")}
 TARGET WORD COUNT: ${blueprint.wordCount || 800}
 
 === AUDIENCE PSYCHOLOGY ===
 Reader: ${persona.buyerPersona || "General reader"}
-Pain Points: ${(persona.painPoints || []).join(", ")}
-Goals: ${(persona.goals || []).join(", ")}
-Fears: ${(persona.fears || []).join(", ")}
-Emotions: ${(persona.emotions || []).join(", ")}
-Triggers: ${(persona.psychologicalTriggers || []).join(", ")}
+Identity Belief: ${persona.identityBelief || "Not specified"}
+Deep Frustrations: ${(persona.emotionalFrustrations || []).join(", ")}
+Hidden Fears: ${(persona.hiddenFears || []).join(", ")}
+Psychological Triggers: ${(persona.psychologicalTriggers || []).join(", ")}
 
-=== RESEARCH CONTEXT ===
-AI Search Queries to Answer: ${(research.contextualQueries || []).join(", ")}
-Trending Topics: ${(research.trendingTopics || []).join(", ")}
-
-=== COMPETITOR GAPS TO EXPLOIT ===
-Missing Topics: ${(competitor.missingTopics || []).join(", ")}
-Weaknesses: ${(competitor.competitorWeaknesses || []).join(", ")}
+=== RESEARCH & COMPETITOR INTELLIGENCE ===
+AI Search Queries to Answer: ${(research.aiSearchQueries || []).join(", ")}
+Competitor Weaknesses to Exploit: ${(competitor.competitorWeaknesses || []).join(", ")}
+Trust Signals to Include: ${(research.trustSignals || []).join(", ")}
 
 WRITING RULES:
 1. STRUCTURE: Start with exactly one # H1 Title. Use ## H2 for main sections and ### H3 for deeper insights.
-2. READABILITY: Use bulleted lists for checklists, steps, or features. No long blocks of text.
-3. EMPHASIS: Use **Bold** for key terms and concepts.
-4. AUTHORITY: Use > Blockquotes for "Executive Insights" or powerful summary statements.
-5. PERSPECTIVE: Use "you" and "your" to speak directly to the reader's psychology.
-6. STYLE: Highly editorial, warm, and human — NO AI clichés (e.g., 'unleash', 'dive deep').
-7. VALUE: Every section must provide actionable advice or a "Focusing Point."
-8. WORD COUNT: Aim for ${blueprint.wordCount || 800} words of high-density value.
-9. AI-SEARCH: Directly answer contextual queries within the body text.
+2. EMPATHY FIRST: Hook the reader immediately by validating their deepest frustrations. Show them you understand their hidden fears.
+3. TRANSFORMATION: Guide the reader emotionally from their current pain to their desired success state.
+4. NO ROBOTIC CLICHÉS: DO NOT use phrases like "In today's fast-paced digital landscape", "Unleash the power", "Dive deep", "Ultimate guide", or "A testament to". Speak like a real human expert talking to a friend over coffee.
+5. TRUST & AUTHORITY: Build trust naturally through specific, relatable examples. Break down complex ideas. Avoid corporate jargon.
+6. PERSUASIVE CTA: Make the Call to Action feel like the natural, emotionally obvious next step, not a sales pitch.
+7. AI-SEARCH FRIENDLY: Directly answer the AI search queries naturally in the text so AI engines index the answers.
+8. READABILITY: Use short paragraphs (2-3 sentences), bullet points, and bold text for emphasis.
 
 Respond in this EXACT format:
 
 [BEGIN_META]
-META_DESCRIPTION: (compelling 150-160 character meta description with primary keyword)
+META_DESCRIPTION: (compelling 150-160 character meta description with a psychological hook)
 [END_META]
 
 [BEGIN_CONTENT]
 (Write the full blog content here. ${blueprint.wordCount || 800} words minimum.
 Use ## for H2 headings.
 Include the sections specified in the blueprint.
-End with a strong conclusion and CTA.)
+End with a highly persuasive CTA.)
 [END_CONTENT]
 
 [BEGIN_SUMMARY]
-(Write 2-3 sentences summarizing the article for the blog card preview.)
+(Write 2-3 sentences summarizing the article's emotional transformation for the blog card preview.)
 [END_SUMMARY]
 
 [BEGIN_TAGS]
@@ -68,18 +64,18 @@ End with a strong conclusion and CTA.)
 [END_TAGS]
 
 [BEGIN_FAQ]
-Q: (relevant question 1)
-A: (concise 2-3 sentence answer)
-Q: (relevant question 2)
-A: (concise 2-3 sentence answer)
-Q: (relevant question 3)
-A: (concise 2-3 sentence answer)
+Q: (relevant conversational question 1)
+A: (concise, human-sounding 2-3 sentence answer)
+Q: (relevant conversational question 2)
+A: (concise, human-sounding 2-3 sentence answer)
+Q: (relevant conversational question 3)
+A: (concise, human-sounding 2-3 sentence answer)
 [END_FAQ]`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
-      { role: "system", content: "You are a human-centric content strategist and writer. Write content that feels personal, emotionally intelligent, and strategically optimized. Every sentence must serve a purpose. Never use filler. Optimize for both humans and AI search systems." },
+      { role: "system", content: "You are a master conversion copywriter and consumer psychologist. Write content that feels deeply personal, emotionally intelligent, and strategically persuasive. Every sentence must drive the reader toward transformation." },
       { role: "user", content: prompt },
     ],
     temperature: 0.7,
@@ -99,7 +95,7 @@ A: (concise 2-3 sentence answer)
   const rawTags = extractBlock(raw, "[BEGIN_TAGS]", "[END_TAGS]");
   const tags = rawTags
     ? rawTags.split(",").map(t => t.replace(/\*\*|__|\\*|_/g, "").trim()).filter(t => t.length > 0 && t.length < 40).slice(0, 6)
-    : blueprint.targetKeywords.slice(0, 6);
+    : (blueprint.targetKeywords || []).slice(0, 6);
 
   // Parse FAQ
   const rawFaq = extractBlock(raw, "[BEGIN_FAQ]", "[END_FAQ]");

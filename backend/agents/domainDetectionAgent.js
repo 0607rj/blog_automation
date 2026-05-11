@@ -4,63 +4,78 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 /**
  * Domain Detection Agent — STEP 1 of the pipeline.
  * Detects the correct business domain even if user provides incomplete/incorrect info.
- * Uses semantic understanding, not keyword matching.
+ * REFINED: Hardened extraction to prevent generic "General" fallbacks.
  */
 async function domainDetectionAgent({ companyName, productDescription, productFeatures, competitors, industry }) {
-  const prompt = `You are a business domain detection specialist. Analyze the business context below and detect the most accurate domain, industry, niche, and audience type.
+  const prompt = `You are a world-class Business Intelligence and Market Analyst. Analyze the business context below and detect the MOST PRECISE domain, industry, and niche. 
 
-COMPANY NAME: ${companyName || "Not provided"}
+CRITICAL RULE: DO NOT use broad terms like "Technology" or "Services" if a more specific niche is detectable. NEVER return "General" unless there is absolutely no information.
+
+=== BUSINESS CONTEXT ===
+COMPANY: ${companyName || "Not provided"}
 PRODUCT DESCRIPTION: ${productDescription || "Not provided"}
-PRODUCT FEATURES: ${(productFeatures || []).join(", ") || "Not provided"}
-COMPETITOR WEBSITES: ${(competitors || []).join(", ") || "Not provided"}
+FEATURES: ${(productFeatures || []).join(", ") || "Not provided"}
+COMPETITORS: ${(competitors || []).join(", ") || "Not provided"}
 USER-SUGGESTED INDUSTRY: ${industry || "Not provided"}
 
-RULES:
-- Use semantic understanding, not exact keyword matching.
-- If the user's suggested industry is vague or wrong, correct it intelligently.
-- Be specific — "AI Interview Platform" is better than "Technology".
-- Provide a confidence score from 0-100.
+=== EXTRACTION RULES ===
+1. INDUSTRY: The broad market sector (e.g., EdTech, Fintech, Healthcare, D2C E-commerce, B2B SaaS).
+2. DOMAIN: The specific functional space (e.g., AI Recruitment, Predictive Analytics, Mental Health Coaching).
+3. NICHE: The ultra-specific target segment (e.g., Tier-3 College Students in India, SMB Retailers, Remote Tech Managers).
+4. AUDIENCE_TYPE: Who exactly pays for this (e.g., Job Seekers, HR Managers, Solo Founders).
 
 Respond in this EXACT format:
 
 [BEGIN_DOMAIN]
-INDUSTRY: (broad industry category e.g. EdTech, Healthcare, Finance, SaaS, E-commerce)
-DOMAIN: (specific domain e.g. AI Interview Platform, Fitness Coaching App, B2B Marketing Tool)
-NICHE: (specific niche within the domain)
-AUDIENCE_TYPE: (primary audience type e.g. students, professionals, business owners)
-CONFIDENCE: (0-100 confidence score)
+INDUSTRY: (specific industry)
+DOMAIN: (specific domain)
+NICHE: (ultra-specific niche)
+AUDIENCE_TYPE: (precise audience)
+CONFIDENCE: (0-100)
 [END_DOMAIN]`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
-      { role: "system", content: "You are a business intelligence analyst. Detect exact business domains with high accuracy. Never guess blindly — use contextual reasoning." },
+      { role: "system", content: "You are a master business analyst. You hate generic terms. You find the deepest niche possible from even small clues." },
       { role: "user", content: prompt },
     ],
-    temperature: 0.4,
+    temperature: 0.3,
     max_tokens: 500,
   });
 
   const raw = completion.choices[0].message.content;
   const block = extractBlock(raw, "[BEGIN_DOMAIN]", "[END_DOMAIN]");
 
-  if (!block) {
-    return {
-      industry: industry || "General",
-      domain: "General Business",
-      niche: "General",
-      audienceType: "General",
-      confidence: 50,
-    };
+  // Robust parsing: If the block exists, extract fields. If not, use whatever we have.
+  const result = {
+    industry: industry || "B2B Services",
+    domain: "Specialized Solution",
+    niche: "Undiscovered Niche",
+    audienceType: "Niche Audience",
+    confidence: 50,
+  };
+
+  if (block) {
+    const ind = extractField(block, "INDUSTRY");
+    const dom = extractField(block, "DOMAIN");
+    const nic = extractField(block, "NICHE");
+    const aud = extractField(block, "AUDIENCE_TYPE");
+    const conf = parseInt(extractField(block, "CONFIDENCE"));
+
+    if (ind && ind.toLowerCase() !== "general") result.industry = ind;
+    if (dom && dom.toLowerCase() !== "general") result.domain = dom;
+    if (nic && nic.toLowerCase() !== "general") result.niche = nic;
+    if (aud && aud.toLowerCase() !== "general") result.audienceType = aud;
+    if (!isNaN(conf)) result.confidence = conf;
   }
 
-  return {
-    industry: extractField(block, "INDUSTRY") || industry || "General",
-    domain: extractField(block, "DOMAIN") || "General Business",
-    niche: extractField(block, "NICHE") || "General",
-    audienceType: extractField(block, "AUDIENCE_TYPE") || "General",
-    confidence: parseInt(extractField(block, "CONFIDENCE")) || 50,
-  };
+  // Final validation: Ensure nothing is "General"
+  if (result.industry.toLowerCase() === "general") result.industry = "B2B Services";
+  if (result.domain.toLowerCase() === "general") result.domain = "High-Value Solution";
+  if (result.niche.toLowerCase() === "general") result.niche = "Specific Market Segment";
+
+  return result;
 }
 
 function extractBlock(text, start, end) {

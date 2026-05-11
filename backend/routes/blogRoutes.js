@@ -58,12 +58,15 @@ router.post("/pipeline-stream", async (req, res) => {
   };
 
   try {
+    const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
     // ══════════════════════════════════════════════════════════════
     // STEP 1: DOMAIN DETECTION AGENT
     // ══════════════════════════════════════════════════════════════
     sendStep("domainDetection", "running", { message: "Detecting your business domain..." });
     const domainResult = await domainDetectionAgent(businessContext);
     sendStep("domainDetection", "done", domainResult);
+    await delay(1200);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 2: PERSONA TEMPLATE LOADER
@@ -75,6 +78,7 @@ router.post("/pipeline-stream", async (req, res) => {
       labels: selectedTemplates.map(t => t.label),
     };
     sendStep("personaLoader", "done", templateSummary);
+    await delay(1000);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 3: PERSONA AGENT
@@ -88,6 +92,7 @@ router.post("/pipeline-stream", async (req, res) => {
       profile: personaResult,
     });
     sendStep("persona", "done", personaResult);
+    await delay(1500);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 4: RESEARCH AGENT
@@ -100,6 +105,7 @@ router.post("/pipeline-stream", async (req, res) => {
       ...researchResult,
     });
     sendStep("research", "done", researchResult);
+    await delay(1500);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 5: COMPETITOR ANALYSIS AGENT
@@ -117,6 +123,7 @@ router.post("/pipeline-stream", async (req, res) => {
       ...competitorResult,
     });
     sendStep("competitor", "done", competitorResult);
+    await delay(1200);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 6: MEMORY AGENT
@@ -124,6 +131,7 @@ router.post("/pipeline-stream", async (req, res) => {
     sendStep("memory", "running", { message: "Checking content history & avoiding repetition..." });
     const memoryResult = await memoryAgent(domainResult.domain);
     sendStep("memory", "done", memoryResult);
+    await delay(1000);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 7: ORCHESTRATOR AGENT
@@ -131,6 +139,7 @@ router.post("/pipeline-stream", async (req, res) => {
     sendStep("orchestrator", "running", { message: "Building strategic content blueprint..." });
     const blueprint = await orchestratorAgent(personaResult, researchResult, competitorResult, memoryResult, domainResult);
     sendStep("orchestrator", "done", blueprint);
+    await delay(1500);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 8: CONTENT GENERATION AGENT
@@ -138,13 +147,15 @@ router.post("/pipeline-stream", async (req, res) => {
     sendStep("generator", "running", { message: "Writing production-quality content..." });
     const blogResult = await blogGeneratorAgent(blueprint, personaResult, researchResult, competitorResult);
     sendStep("generator", "done", { title: blogResult.title, wordCount: blogResult.wordCount });
+    await delay(1200);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 9: VALIDATION LAYER
     // ══════════════════════════════════════════════════════════════
     sendStep("validation", "running", { message: "Validating content quality..." });
-    const validationResult = validationAgent(blogResult, blueprint, personaResult, researchResult, competitorResult);
+    const validationResult = await validationAgent(blogResult, blueprint, personaResult, researchResult, competitorResult);
     sendStep("validation", "done", validationResult);
+    await delay(1000);
 
     // ══════════════════════════════════════════════════════════════
     // STEP 10: STREAM CONTENT WORD BY WORD
