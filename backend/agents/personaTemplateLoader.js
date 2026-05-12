@@ -2,49 +2,45 @@ const PERSONA_TEMPLATES = require("../data/personaTemplates");
 
 /**
  * Persona Template Loader — STEP 2 of the pipeline.
- * Loads the TOP 3-5 most relevant persona templates based on detected domain.
- * Uses semantic matching against domain keywords.
- * Does NOT generate random personas — uses curated templates.
+ * Loads the matching persona template based on the audience category.
+ * Direct match for accounting domain — no fuzzy matching needed.
  */
 function personaTemplateLoader(domainResult) {
-  const { industry, domain, niche, audienceType } = domainResult;
+  const { audienceCategory } = domainResult;
 
-  // Build a search string from all domain detection outputs
-  const searchTerms = [industry, domain, niche, audienceType]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+  // Direct match by audience category
+  const directMatch = PERSONA_TEMPLATES.find(t =>
+    t.audienceCategory === audienceCategory
+  );
 
-  // Score each template by how many of its domain keywords match
+  if (directMatch) {
+    return [directMatch];
+  }
+
+  // Fallback: score-based matching using domain keywords
+  const searchTerms = [
+    domainResult.industry,
+    domainResult.domain,
+    domainResult.niche,
+    domainResult.audienceType
+  ].filter(Boolean).join(" ").toLowerCase();
+
   const scored = PERSONA_TEMPLATES.map(template => {
     let score = 0;
-
     template.domains.forEach(d => {
-      if (searchTerms.includes(d.toLowerCase())) {
-        score += 3; // Strong match
-      }
-      // Partial word matching
-      const words = d.toLowerCase().split(" ");
-      words.forEach(word => {
-        if (word.length > 2 && searchTerms.includes(word)) {
-          score += 1;
-        }
+      if (searchTerms.includes(d.toLowerCase())) score += 3;
+      d.toLowerCase().split(" ").forEach(word => {
+        if (word.length > 2 && searchTerms.includes(word)) score += 1;
       });
     });
-
-    // Boost if label matches audience type
-    if (audienceType && template.label.toLowerCase().includes(audienceType.toLowerCase())) {
-      score += 5;
-    }
-
     return { ...template, score };
   });
 
-  // Sort by score descending and take top 3-5
   const sorted = scored.sort((a, b) => b.score - a.score);
+  const result = sorted.filter(t => t.score > 0).slice(0, 1).map(({ score, ...rest }) => rest);
 
-  // Take top 5 if they have scores > 0, otherwise return empty for Zero-Shot generation
-  return sorted.filter(t => t.score > 0).slice(0, 5).map(({ score, ...rest }) => rest);
+  // If nothing matches, return the first template as default
+  return result.length > 0 ? result : [PERSONA_TEMPLATES[0]];
 }
 
 module.exports = personaTemplateLoader;

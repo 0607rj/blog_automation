@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const blogRoutes = require("./routes/blogRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const { startScheduler } = require("./scheduler/cronScheduler");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,19 +44,34 @@ connectDB();
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api", blogRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.json({ 
     status: "online", 
-    message: "🚀 Blog Automation API is running!",
+    message: "🚀 AccountIQ Autonomous AI Content Intelligence System",
+    system: "Production-Level Autonomous AI SEO Content Intelligence",
+    features: [
+      "Autonomous 15-day content generation",
+      "Multi-model AI Intelligence (Powered by Groq)",
+      "Location intelligence (Kolkata, Lucknow)",
+      "9 hardcoded competitor analysis",
+      "7-dimension validation",
+      "Self-learning memory system"
+    ],
     timestamp: new Date().toISOString()
   });
 });
 
-// ─── Start server ─────────────────────────────────────────────────────────────
+// ─── Start server + scheduler ─────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🌐 Server listening on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/`);
+  console.log(`📊 Dashboard API: http://localhost:${PORT}/api/dashboard/stats`);
+  
+  // Start the autonomous scheduler
+  startScheduler();
 });
+
 

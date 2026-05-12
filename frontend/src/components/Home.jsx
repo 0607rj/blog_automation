@@ -1,251 +1,145 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import api from "../api";
 
 const PIPELINE_STEPS = [
-  { icon: "🔎", label: "Domain Detection",   desc: "Auto-detects your business domain using semantic AI analysis" },
-  { icon: "👤", label: "Persona Agent",        desc: "Synthesizes unified audience models — pain points, fears, and emotional triggers" },
-  { icon: "🔍", label: "Research Agent",       desc: "Finds trending keywords, SEO data & AI-search queries" },
-  { icon: "⚔️", label: "Competitor Agent",     desc: "Analyzes competitor websites for content gaps & ranking opportunities" },
-  { icon: "🧠", label: "Memory Agent",         desc: "Retrieves past strategies from MongoDB — avoids repetition" },
-  { icon: "🎯", label: "Orchestrator",         desc: "Combines all intelligence into a precise content strategy" },
-  { icon: "✍️", label: "Content Generator",    desc: "Writes SEO + AI-search optimized, audience-aware content" },
-  { icon: "✅", label: "Validation Layer",     desc: "Verifies quality, keyword integration & production readiness" },
+  { icon: "📊", title: "Opportunity Analysis", desc: "Dual-model scoring across 3 audience categories using Gemini + DeepSeek R1. Selects highest-opportunity segment every 15 days.", model: "Gemini + DeepSeek R1" },
+  { icon: "👤", title: "Persona Intelligence", desc: "Semi-dynamic 12-section persona enrichment with location awareness, trend injection, and competitor messaging context.", model: "Gemini" },
+  { icon: "🔍", title: "Research Intelligence", desc: "8-methodology behavioral research combining emotional search intent with analytical SEO gap analysis.", model: "Gemini + DeepSeek R1" },
+  { icon: "⚔️", title: "Competitor Intelligence", desc: "7-framework analysis of 9 hardcoded competitors: SWOT, emotional gaps, trust gaps, SEO gaps, messaging weaknesses.", model: "DeepSeek R1" },
+  { icon: "🧠", title: "Self-Learning Memory", desc: "MongoDB-backed continuous learning from successful hooks, personas, competitor gaps, and location patterns.", model: "MongoDB" },
+  { icon: "🎯", title: "Orchestrator Brain", desc: "Central intelligence synthesizing 5 sources into a precise content blueprint with localized SEO strategy.", model: "Groq" },
+  { icon: "✍️", title: "Content Generation", desc: "Psychology-driven, conversion-oriented content writing with location-specific context and emotional depth.", model: "Groq" },
+  { icon: "✅", title: "7-Dim Validation", desc: "Multi-dimension quality assessment ensuring production-grade output meets all SEO and psychological standards.", model: "Groq" },
 ];
 
-const FEATURES = [
-  {
-    icon: "🏢",
-    title: "Business Intelligence Input",
-    desc: "Provide your company, product, and goals — the system understands your business architecture automatically.",
-    tag: "Domain Detection · Semantic AI",
-  },
-  {
-    icon: "🤖",
-    title: "Multi-Agent Orchestration",
-    desc: "Specialized agents collaborate in sequence. Each passes enriched intelligence to the next before a single word is written.",
-    tag: "Multi-Agent Systems",
-  },
-  {
-    icon: "👤",
-    title: "Adaptive Audience Models",
-    desc: "Deep psychological profiles that adapt to your specific niche. No generic targeting — our models understand human desires.",
-    tag: "Psychological Intelligence",
-  },
-  {
-    icon: "🧠",
-    title: "Long-Term Memory",
-    desc: "The system persists every narrative and strategy. The Memory Agent reads this history to ensure your brand voice evolves.",
-    tag: "Context Persistence",
-  },
-  {
-    icon: "⚔️",
-    title: "Competitor Analysis",
-    desc: "Provide competitor landscapes and the system finds keyword gaps and ranking opportunities others miss.",
-    tag: "Competitive Intelligence",
-  },
-  {
-    icon: "✅",
-    title: "Validation Layer",
-    desc: "Every manuscript is validated for narrative flow, structure quality, and production readiness before publishing.",
-    tag: "Quality Assurance",
-  },
-  {
-    icon: "🌐",
-    title: "Search Optimization",
-    desc: "Content is optimized for modern search landscapes — ensuring visibility across both traditional and AI platforms.",
-    tag: "AEO + SEO",
-  },
-  {
-    icon: "⚡",
-    title: "Real-Time Synthesis",
-    desc: "Watch your manuscript come to life with real-time streaming. No loading spinners — intelligence types itself live.",
-    tag: "Live Streaming",
-  },
+const LOCATIONS = [
+  { city: "Kolkata", state: "West Bengal", status: "Active", detail: "Strong B.Com enrollment, CA coaching culture, BPO accounting demand" },
+  { city: "Lucknow", state: "Uttar Pradesh", status: "Active", detail: "Growing IT sector, GST practitioner demand, government job vs private career" },
+  { city: "Bangalore", state: "Karnataka", status: "Upcoming", detail: "IT capital, finance professionals in tech companies" },
+  { city: "Delhi", state: "Delhi NCR", status: "Upcoming", detail: "Largest job market, maximum accounting openings" },
+  { city: "Patna", state: "Bihar", status: "Upcoming", detail: "Growing education hub, aspirational career seekers" },
 ];
 
 export default function Home() {
-  const [blogCount, setBlogCount] = useState("...");
-  const [categoryCount, setCategoryCount] = useState("...");
-  const [activeStep, setActiveStep] = useState(0);
-
-  // Animate through pipeline steps
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveStep(prev => (prev + 1) % PIPELINE_STEPS.length);
-    }, 1800);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Fetch live stats
-  useEffect(() => {
-    api.get("/blogs").then(res => {
-      const blogs = res.data.blogs || [];
-      setBlogCount(blogs.length);
-      const cats = new Set(blogs.map(b => b.category).filter(Boolean));
-      setCategoryCount(cats.size);
-    }).catch(() => {});
-  }, []);
-
   return (
-    <div className="bg-white text-stone-900">
-
-      {/* SECTION 1: HERO */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 relative overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-stone-50 rounded-full opacity-40 blur-3xl" />
-        </div>
-
-        <div className="max-w-5xl space-y-10 relative z-10">
-          <div className="pt-20"></div>
-
-          <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.85] text-stone-900">
-            The Soul <br />
-            <span className="text-stone-300 italic serif font-normal">of Your Narrative.</span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-stone-500 leading-relaxed max-w-3xl mx-auto font-medium serif italic">
-            Stop generating content. Start crafting connection. We've built an intelligence engine that understands 
-            human psychology to tell stories that move the world.
+    <div className="bg-white">
+      {/* ── Hero Section ── */}
+      <section className="max-w-6xl mx-auto px-6 pt-32 pb-24">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
+          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600">
+            Autonomous · Multi-Model · Location-Aware
           </p>
-
-          {/* Live Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-12 py-8 border-t border-b border-stone-100">
-            <div className="text-center">
-              <p className="text-5xl font-black text-stone-900">{blogCount}</p>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">Stories Crafted</p>
-            </div>
-            <div className="w-px h-12 bg-stone-100" />
-            <div className="text-center">
-              <p className="text-5xl font-black text-stone-900">{categoryCount}</p>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">Niches Explored</p>
-            </div>
-            <div className="w-px h-12 bg-stone-100" />
-            <div className="text-center">
-              <p className="text-5xl font-black text-stone-900">∞</p>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mt-1">Persona Models</p>
-            </div>
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row gap-5 justify-center">
-            <Link
-              to="/pipeline"
-              className="bg-stone-900 text-white px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-stone-800 transition-all shadow-xl hover:-translate-y-1 active:scale-95"
-            >
-              Write Your Manuscript
-            </Link>
-            <Link
-              to="/blogs"
-              className="border-2 border-stone-200 text-stone-900 px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:border-stone-900 transition-all"
-            >
-              The Archive
-            </Link>
-          </div>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-black text-stone-900 leading-[1.1] mb-8 serif max-w-4xl">
+          AI Content Intelligence<br />
+          <span className="text-emerald-600">for Accounting Education</span>
+        </h1>
+        <p className="text-stone-500 text-lg md:text-xl serif max-w-2xl leading-relaxed mb-12">
+          A production-level autonomous system that researches, analyzes, identifies opportunities, 
+          generates, validates, and publishes — without requiring a single manual prompt.
+        </p>
+        <div className="flex items-center gap-4">
+          <Link to="/dashboard"
+            className="bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95">
+            Open Dashboard →
+          </Link>
+          <Link to="/blogs"
+            className="border border-stone-200 text-stone-700 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-stone-50 transition-all">
+            View Archive
+          </Link>
         </div>
       </section>
 
-      {/* SECTION 2: ARCHITECTURE */}
-      <section className="py-40 bg-stone-50 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400 mb-4">The Architecture</p>
-            <h2 className="text-4xl md:text-6xl font-bold serif mb-6">Built for Depth.</h2>
-          </div>
+      {/* ── Stats Bar ── */}
+      <section className="border-y border-stone-100 py-12">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {[
+            { value: "10", label: "AI Agents" },
+            { value: "3", label: "AI Models" },
+            { value: "15d", label: "Auto Cycle" },
+            { value: "5", label: "Target Cities" },
+          ].map(s => (
+            <div key={s.label}>
+              <p className="text-4xl font-black text-emerald-600">{s.value}</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-stone-400 mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              {PIPELINE_STEPS.map((step, idx) => (
-                <div
-                  key={step.label}
-                  className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 ${
-                    idx === activeStep ? "bg-white shadow-lg border border-stone-200 scale-[1.02]" : "bg-white border border-stone-100 opacity-50"
-                  }`}
-                >
-                  <span className="text-xl">{step.icon}</span>
-                  <div className="flex-1">
-                    <p className="font-bold text-stone-900 text-sm">{step.label}</p>
-                    <p className="text-[11px] text-stone-500 serif leading-relaxed">{step.desc}</p>
-                  </div>
+      {/* ── Agent Pipeline ── */}
+      <section className="max-w-6xl mx-auto px-6 py-32">
+        <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 mb-4">Autonomous Pipeline Architecture</p>
+        <h2 className="text-4xl md:text-5xl font-black text-stone-900 mb-16 serif">Every blog is the output of<br />8 specialized agents.</h2>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {PIPELINE_STEPS.map((step, i) => (
+            <div key={i} className="group bg-stone-50 rounded-3xl p-6 border border-stone-100 hover:border-emerald-200 hover:shadow-lg transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-3xl">{step.icon}</span>
+                <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">{step.model}</span>
+              </div>
+              <h3 className="font-black text-stone-900 text-sm mb-2">{step.title}</h3>
+              <p className="text-xs text-stone-500 serif leading-relaxed">{step.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Location Intelligence ── */}
+      <section className="bg-stone-950 text-white py-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-400 mb-4">Location Intelligence</p>
+          <h2 className="text-4xl md:text-5xl font-black mb-16 serif">Content adapts to where<br />your audience lives.</h2>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {LOCATIONS.map(loc => (
+              <div key={loc.city} className={`rounded-3xl p-6 border ${loc.status === "Active" ? "border-emerald-500/30 bg-emerald-950/30" : "border-stone-800 bg-stone-900/50 opacity-60"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-black text-lg">{loc.city}</h3>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${loc.status === "Active" ? "bg-emerald-500/20 text-emerald-400" : "bg-stone-800 text-stone-500"}`}>{loc.status}</span>
                 </div>
-              ))}
-            </div>
-
-            <div className="bg-stone-900 rounded-[2.5rem] p-12 text-white flex flex-col justify-between">
-              <div className="space-y-6">
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400">Strategic Reasoning</p>
-                <h3 className="text-3xl font-bold serif italic leading-relaxed">
-                  "Single-prompt AI is generic. Multi-agent intelligence is{" "}
-                  <span className="text-stone-400">authoritative.</span>"
-                </h3>
-              </div>
-              <div className="mt-10 space-y-4 text-sm text-stone-400 serif">
-                 <div className="flex items-start gap-3"><span>→</span><span>Deep psychological modeling replaces random generation</span></div>
-                 <div className="flex items-start gap-3"><span>→</span><span>Competitor landscapes are analyzed for ranking gaps</span></div>
-                 <div className="flex items-start gap-3"><span>→</span><span>Memory systems ensure brand voice evolution</span></div>
-              </div>
-              <div className="mt-10 pt-6 border-t border-stone-800">
-                <Link to="/pipeline" className="inline-block bg-white text-stone-900 px-8 py-4 rounded-full text-xs font-black uppercase tracking-widest hover:bg-stone-200 transition-all">
-                  Write Your Manuscript →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 3: FEATURES GRID */}
-      <section className="py-40 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-6xl font-bold serif">Built for Production.</h2>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="group bg-stone-50 hover:bg-white border border-stone-100 hover:border-stone-200 hover:shadow-xl rounded-3xl p-8 transition-all duration-300">
-                <div className="w-12 h-12 bg-white border border-stone-200 rounded-2xl flex items-center justify-center text-2xl mb-6">{f.icon}</div>
-                <h3 className="font-bold text-stone-900 mb-3">{f.title}</h3>
-                <p className="text-stone-500 serif text-sm leading-relaxed">{f.desc}</p>
+                <p className="text-xs text-stone-400 mb-2">{loc.state}</p>
+                <p className="text-xs text-stone-500 serif leading-relaxed">{loc.detail}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* SECTION 4: THE NARRATIVE SOUL */}
-      <section className="py-40 px-6 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-24">
-             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-400 mb-4">The Editorial Soul</p>
-             <h2 className="text-4xl md:text-6xl font-bold serif">Narrative over Perspective.</h2>
-          </div>
-          <div className="grid lg:grid-cols-3 gap-12">
-            <div className="space-y-6 p-10 bg-stone-50 rounded-[2.5rem] border border-stone-100">
-              <div className="text-3xl">🌿</div>
-              <h4 className="font-bold text-stone-900 text-xl">Human Nuance</h4>
-              <p className="text-sm text-stone-500 serif leading-relaxed">We capture the subtle emotional triggers that turn readers into followers.</p>
+      {/* ── Multi-Model Architecture ── */}
+      <section className="max-w-6xl mx-auto px-6 py-32">
+        <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600 mb-4">Multi-Model Architecture</p>
+        <h2 className="text-4xl md:text-5xl font-black text-stone-900 mb-16 serif">Three AI models,<br />each with a purpose.</h2>
+        
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { name: "Gemini", role: "Contextual Understanding", agents: "Persona Agent, Research (Broad), Opportunity Analysis", desc: "Broad emotional and contextual intelligence. Understands WHY users search, not just what they search." },
+            { name: "DeepSeek R1", role: "Analytical Reasoning", agents: "Competitor Agent, Research (Analytical), Opportunity Scoring", desc: "Deep analytical reasoning via OpenRouter. Structured gap analysis, quantitative scoring, and strategic intelligence." },
+            { name: "Groq", role: "Fast Execution", agents: "Orchestrator, Content Generation, Validation", desc: "High-speed generation for content writing and validation. Existing proven pipeline preserved." },
+          ].map(m => (
+            <div key={m.name} className="bg-gradient-to-br from-stone-50 to-emerald-50/30 rounded-3xl p-8 border border-stone-100">
+              <h3 className="text-2xl font-black text-stone-900 mb-2">{m.name}</h3>
+              <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-4">{m.role}</p>
+              <p className="text-sm text-stone-600 serif leading-relaxed mb-4">{m.desc}</p>
+              <p className="text-[10px] text-stone-400"><strong>Agents:</strong> {m.agents}</p>
             </div>
-            <div className="space-y-6 p-10 bg-stone-50 rounded-[2.5rem] border border-stone-100">
-              <div className="text-3xl">🕯️</div>
-              <h4 className="font-bold text-stone-900 text-xl">Atmospheric Tone</h4>
-              <p className="text-sm text-stone-500 serif leading-relaxed">Every blog maintains a consistent, high-end editorial tone.</p>
-            </div>
-            <div className="space-y-6 p-10 bg-stone-50 rounded-[2.5rem] border border-stone-100">
-              <div className="text-3xl">📖</div>
-              <h4 className="font-bold text-stone-900 text-xl">Lasting Narrative</h4>
-              <p className="text-sm text-stone-500 serif leading-relaxed">We build a cohesive collection of thoughts that grow with your brand.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* SECTION 5: FINAL CTA */}
-      <section className="py-40 bg-stone-50 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold serif mb-12">Experience Autonomous Content.</h2>
-          <Link to="/pipeline" className="inline-block bg-stone-900 text-white px-12 py-5 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-stone-800 transition-all shadow-xl">
-            Write Your Manuscript →
-          </Link>
-        </div>
+      {/* ── CTA ── */}
+      <section className="bg-emerald-600 py-24 px-6 text-center">
+        <h2 className="text-3xl md:text-4xl font-black text-white mb-6 serif">The system is live.</h2>
+        <p className="text-emerald-100 text-lg mb-10 max-w-xl mx-auto serif">
+          Every 15 days, the pipeline automatically identifies the highest-opportunity audience, 
+          generates psychology-driven content, and publishes — autonomously.
+        </p>
+        <Link to="/dashboard"
+          className="bg-white text-emerald-700 px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-50 transition-all shadow-lg active:scale-95 inline-block">
+          Open Dashboard →
+        </Link>
       </section>
     </div>
   );

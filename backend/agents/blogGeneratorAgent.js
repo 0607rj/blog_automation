@@ -3,79 +3,86 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
  * Content Generation Agent — STEP 8 of the pipeline.
- * Generates final production-level optimized content.
- * Focuses on human-level emotional persuasion writing.
+ * Generates accounting/finance domain content using:
+ * persona psychology, competitor gaps, research intent,
+ * emotional hooks, trust-building, and transformation storytelling.
  */
 async function blogGeneratorAgent(blueprint, persona, research, competitor) {
-  const prompt = `You are a world-class conversion copywriter and persuasion psychologist. Write a production-quality, deeply emotional, and highly persuasive blog post.
-This content must feel 100% HUMAN-WRITTEN. It should not sound like generic AI.
+  const prompt = `You are a world-class content strategist for ACCOUNTING & FINANCE education in India. Write a production-quality blog that deeply connects with the reader's psychology.
 
 === STRATEGIC BLUEPRINT ===
 TITLE: ${blueprint.blogTitle}
 EMOTIONAL HOOK: ${blueprint.emotionalHook || blueprint.emotionalTone}
-TRANSFORMATION NARRATIVE: ${blueprint.transformationStory || blueprint.contentAngle}
+EMOTIONAL ANGLE: ${blueprint.emotionalAngle || "Empathy + practical roadmap"}
+TRANSFORMATION: ${blueprint.transformationStory || blueprint.contentAngle}
 TRUST STRATEGY: ${blueprint.trustBuildingStrategy}
-SECTIONS TO COVER: ${(blueprint.sectionsToCover || []).join(", ")}
-CTA STRATEGY: ${blueprint.ctaStrategy}
-TARGET KEYWORDS: ${(blueprint.targetKeywords || []).join(", ")}
-TARGET WORD COUNT: ${blueprint.wordCount || 800}
+SECTIONS: ${(blueprint.sectionsToCover || []).join(", ")}
+CTA: ${blueprint.ctaStrategy}
+KEYWORDS: ${(blueprint.targetKeywords || []).join(", ")}
+WORD COUNT: ${blueprint.wordCount || 1000}
 
 === AUDIENCE PSYCHOLOGY ===
-Reader: ${persona.buyerPersona || "General reader"}
-Identity Belief: ${persona.identityBelief || "Not specified"}
-Deep Frustrations: ${(persona.emotionalFrustrations || []).join(", ")}
-Hidden Fears: ${(persona.hiddenFears || []).join(", ")}
-Psychological Triggers: ${(persona.psychologicalTriggers || []).join(", ")}
+Reader: ${persona.buyerPersona || "Accounting student"}
+Identity Belief: ${persona.identityBelief || ""}
+Hidden Fears: ${Array.isArray(persona.hiddenFears) ? persona.hiddenFears.join("; ") : (persona.hiddenFears || "")}
+Hidden Pains: ${Array.isArray(persona.painPoints) ? persona.painPoints.join("; ") : ""}
+Live Situations: ${Array.isArray(persona.liveSituations) ? persona.liveSituations.slice(0, 2).join("; ") : ""}
+Emotional Triggers: ${Array.isArray(persona.emotionalTriggers) ? persona.emotionalTriggers.join(", ") : (persona.emotionalTriggers || "")}
 
-=== RESEARCH & COMPETITOR INTELLIGENCE ===
+=== RESEARCH INTELLIGENCE ===
 AI Search Queries to Answer: ${(research.aiSearchQueries || []).join(", ")}
-Competitor Weaknesses to Exploit: ${(competitor.competitorWeaknesses || []).join(", ")}
 Trust Signals to Include: ${(research.trustSignals || []).join(", ")}
 
+=== COMPETITOR GAPS TO EXPLOIT ===
+Emotional Gaps: ${(competitor.emotionalGaps || []).join(", ")}
+Trust Gaps: ${(competitor.trustGaps || []).join(", ")}
+Blind Spots: ${(competitor.competitorBlindSpots || []).join(", ")}
+
 WRITING RULES:
-1. STRUCTURE: Start with exactly one # H1 Title. Use ## H2 for main sections and ### H3 for deeper insights.
-2. EMPATHY FIRST: Hook the reader immediately by validating their deepest frustrations. Show them you understand their hidden fears.
-3. TRANSFORMATION: Guide the reader emotionally from their current pain to their desired success state.
-4. NO ROBOTIC CLICHÉS: DO NOT use phrases like "In today's fast-paced digital landscape", "Unleash the power", "Dive deep", "Ultimate guide", or "A testament to". Speak like a real human expert talking to a friend over coffee.
-5. TRUST & AUTHORITY: Build trust naturally through specific, relatable examples. Break down complex ideas. Avoid corporate jargon.
-6. PERSUASIVE CTA: Make the Call to Action feel like the natural, emotionally obvious next step, not a sales pitch.
-7. AI-SEARCH FRIENDLY: Directly answer the AI search queries naturally in the text so AI engines index the answers.
-8. READABILITY: Use short paragraphs (2-3 sentences), bullet points, and bold text for emphasis.
+1. STRUCTURE: Start with # H1 Title. Use ## H2 for main sections and ### H3 for deeper insights.
+2. EMPATHY FIRST: Open by validating their EXACT pain. Use live situations from the persona (e.g., "You just closed LinkedIn after seeing your classmate's placement update...").
+3. PSYCHOLOGY-DRIVEN: Every section must connect to an emotional trigger or hidden fear.
+4. TRANSFORMATION: Guide from current pain to desired success with concrete steps.
+5. TRUST-BUILDING: Include specific examples, data points, and relatable scenarios.
+6. NO CLICHÉS: Never use "In today's fast-paced world", "Unleash", "Dive deep", "Ultimate guide". Write like a mentor talking to the reader.
+7. ACCOUNTING CONTEXT: All examples, scenarios, and advice must be specific to accounting/finance/commerce careers.
+8. AI-SEARCH FRIENDLY: Naturally answer the AI search queries within the text.
+9. READABILITY: Short paragraphs, bullet points, bold text for emphasis.
+10. COMPETITOR DIFFERENTIATION: Address the emotional gaps competitors miss.
+11. NO LOCATIONS: DO NOT mention the city name (e.g., Kolkata, Lucknow) or target state in the blog title, H1, H2s, or content. The location is only for backend intelligence. Keep the content universally applicable to the Indian market while using the intelligence derived from the location.
+12. DEPTH: Address the "too much data" and "many pain points" provided in the persona template. Don't skip the deep psychological struggles.
 
 Respond in this EXACT format:
 
 [BEGIN_META]
-META_DESCRIPTION: (compelling 150-160 character meta description with a psychological hook)
+META_DESCRIPTION: (150-160 char description with emotional hook for accounting audience)
 [END_META]
 
 [BEGIN_CONTENT]
-(Write the full blog content here. ${blueprint.wordCount || 800} words minimum.
-Use ## for H2 headings.
-Include the sections specified in the blueprint.
-End with a highly persuasive CTA.)
+(Full blog content. ${blueprint.wordCount || 1000} words minimum. Accounting/finance focused. Deeply emotional and practical.)
 [END_CONTENT]
 
 [BEGIN_SUMMARY]
-(Write 2-3 sentences summarizing the article's emotional transformation for the blog card preview.)
+(2-3 sentences summarizing the emotional transformation for the blog card preview.)
 [END_SUMMARY]
 
 [BEGIN_TAGS]
-(Write 5-6 keyword tags, comma separated.)
+(5-6 accounting-specific keyword tags, comma separated.)
 [END_TAGS]
 
 [BEGIN_FAQ]
-Q: (relevant conversational question 1)
-A: (concise, human-sounding 2-3 sentence answer)
-Q: (relevant conversational question 2)
-A: (concise, human-sounding 2-3 sentence answer)
-Q: (relevant conversational question 3)
-A: (concise, human-sounding 2-3 sentence answer)
+Q: (accounting-relevant conversational question 1)
+A: (concise 2-3 sentence answer)
+Q: (accounting-relevant conversational question 2)
+A: (concise 2-3 sentence answer)
+Q: (accounting-relevant conversational question 3)
+A: (concise 2-3 sentence answer)
 [END_FAQ]`;
 
   const completion = await groq.chat.completions.create({
     model: "llama-3.1-8b-instant",
     messages: [
-      { role: "system", content: "You are a master conversion copywriter and consumer psychologist. Write content that feels deeply personal, emotionally intelligent, and strategically persuasive. Every sentence must drive the reader toward transformation." },
+      { role: "system", content: "You are a master content writer for the Indian accounting education market. Your content feels like a warm, knowledgeable mentor speaking directly to the reader's deepest insecurities and ambitions about their accounting career. Every paragraph drives emotional transformation. Use accounting-specific examples (GST, Tally, balance sheets, audit, taxation)." },
       { role: "user", content: prompt },
     ],
     temperature: 0.7,
@@ -90,18 +97,16 @@ A: (concise, human-sounding 2-3 sentence answer)
   const metaDescription = extractBlock(raw, "[BEGIN_META]", "[END_META]");
   const metaDesc = metaDescription ? extractField(metaDescription, "META_DESCRIPTION") : "";
 
-  const summary = extractBlock(raw, "[BEGIN_SUMMARY]", "[END_SUMMARY]") || "An insightful read.";
+  const summary = extractBlock(raw, "[BEGIN_SUMMARY]", "[END_SUMMARY]") || "An insightful guide for accounting professionals.";
 
   const rawTags = extractBlock(raw, "[BEGIN_TAGS]", "[END_TAGS]");
   const tags = rawTags
     ? rawTags.split(",").map(t => t.replace(/\*\*|__|\\*|_/g, "").trim()).filter(t => t.length > 0 && t.length < 40).slice(0, 6)
     : (blueprint.targetKeywords || []).slice(0, 6);
 
-  // Parse FAQ
   const rawFaq = extractBlock(raw, "[BEGIN_FAQ]", "[END_FAQ]");
   const faq = parseFAQ(rawFaq);
 
-  // Extract H2s from content
   const h2s = [];
   const h2Regex = /^##\s+(.+)$/gm;
   let match;
@@ -109,8 +114,7 @@ A: (concise, human-sounding 2-3 sentence answer)
     h2s.push(match[1].trim());
   }
 
-  // Extract CTA (last paragraph or section)
-  const ctaMatch = content.match(/(?:^|\n)(?:##\s*(?:Call to Action|CTA|Take Action|Next Steps|What's Next|Ready to|Start Your).*?\n)([\s\S]*?)$/i);
+  const ctaMatch = content.match(/(?:^|\n)(?:##\s*(?:Call to Action|CTA|Take Action|Next Steps|What's Next|Ready to|Start Your|Your Next).*?\n)([\s\S]*?)$/i);
   const cta = ctaMatch ? ctaMatch[1].trim() : blueprint.ctaStrategy || "";
 
   return {
@@ -120,7 +124,7 @@ A: (concise, human-sounding 2-3 sentence answer)
     h2s,
     content,
     summary,
-    category: blueprint.category || "GENERAL",
+    category: blueprint.category || "ACCOUNTING",
     tags,
     faq,
     cta,

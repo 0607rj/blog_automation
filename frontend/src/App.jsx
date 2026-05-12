@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import api from "./api";
-import PipelineStudio from "./components/PipelineStudio";
+import Dashboard from "./components/Dashboard";
 import BlogCard from "./components/BlogCard";
 import Home from "./components/Home";
 import BlogDetail from "./components/BlogDetail";
@@ -27,11 +27,10 @@ export default function App() {
 
   // ─── Categories logic ───
   const categories = useMemo(() => {
-    // Clean each category name: remove stars, extra labels, and keep it crisp
     const cleanList = blogs.map(b => {
       if (!b.category) return "General";
       return b.category
-        .replace(/\*\*|__|\*|_/g, "")
+        .replace(/\*\*|__|\\*|_/g, "")
         .replace(/category:|topic:/gi, "")
         .trim()
         .toUpperCase();
@@ -54,19 +53,10 @@ export default function App() {
     }
   }
 
-  function handleGenerated(newBlog, blogCategory) {
-    setBlogs((prev) => [newBlog, ...prev]);
-    // Navigate to archive and pre-select the blog's category
-    const cat = blogCategory || newBlog?.category || "All";
-    setSelectedCategory(cat.toUpperCase());
-    navigate("/blogs");
-  }
-
 
   const filteredBlogs = useMemo(() => {
     let result = blogs;
 
-    // Filter by Search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       result = result.filter(b => 
@@ -75,12 +65,10 @@ export default function App() {
       );
     }
 
-    // Filter by Category
     if (selectedCategory !== "All") {
       result = result.filter(b => {
         if (!b.category) return false;
-        // Clean the blog's category before comparing to ensure a match
-        const cleanBlogCat = b.category.replace(/\*\*|__|\*|_/g, "").replace(/category:|topic:/gi, "").trim().toUpperCase();
+        const cleanBlogCat = b.category.replace(/\*\*|__|\\*|_/g, "").replace(/category:|topic:/gi, "").trim().toUpperCase();
         return cleanBlogCat === selectedCategory.toUpperCase();
       });
     }
@@ -95,7 +83,7 @@ export default function App() {
         {/* ── Fixed Navigation ── */}
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-2xl border-b border-stone-100 z-50 px-6 lg:px-12 h-20 flex items-center justify-between">
           <Link to="/" className="text-2xl font-black tracking-tighter cursor-pointer">
-            The Manuscript<span className="text-stone-300">.</span>
+            AccountIQ<span className="text-emerald-500">.</span>
           </Link>
           
           <div className="flex items-center gap-8">
@@ -103,10 +91,10 @@ export default function App() {
               Archive
             </Link>
             <Link 
-              to="/pipeline"
-              className="text-xs font-bold uppercase tracking-widest bg-stone-900 text-white px-8 py-3 rounded-full hover:bg-stone-800 transition-all active:scale-95 shadow-xl"
+              to="/dashboard"
+              className="text-xs font-bold uppercase tracking-widest bg-emerald-600 text-white px-8 py-3 rounded-full hover:bg-emerald-700 transition-all active:scale-95 shadow-xl shadow-emerald-200"
             >
-              Create New Blog
+              Dashboard
             </Link>
           </div>
         </nav>
@@ -117,9 +105,9 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
 
-            <Route path="/pipeline" element={
-              <div className="bg-white min-h-screen py-20 px-6">
-                <PipelineStudio onGenerated={handleGenerated} />
+            <Route path="/dashboard" element={
+              <div className="bg-stone-50 min-h-screen py-8">
+                <Dashboard />
               </div>
             } />
 
@@ -140,9 +128,8 @@ export default function App() {
                     </div>
                   </div>
                   
-                  {/* Category Pills (Medium Style) */}
+                  {/* Category Pills */}
                   <div className="flex flex-wrap items-center gap-2 mb-10">
-
                     {categories.map((cat) => (
                       <button
                         key={cat}
@@ -194,17 +181,16 @@ export default function App() {
 
         <footer className="mt-40 py-24 border-t border-stone-100 bg-stone-50 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-stone-400 font-black mb-4">
-            The Manuscript Publication
+            AccountIQ · Autonomous AI SEO Content Intelligence
           </p>
           <div className="flex justify-center gap-8 mb-12">
             <Link to="/" className="text-xs font-bold text-stone-500 hover:text-stone-900">Home</Link>
             <Link to="/blogs" className="text-xs font-bold text-stone-500 hover:text-stone-900">Archive</Link>
-            <a href="#" className="text-xs font-bold text-stone-500 hover:text-stone-900">About</a>
+            <Link to="/dashboard" className="text-xs font-bold text-stone-500 hover:text-stone-900">Dashboard</Link>
           </div>
-          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} The Editorial Collection. All rights reserved.</p>
+          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} AccountIQ. Autonomous AI for Accounting Education.</p>
         </footer>
       </div>
     </>
   );
 }
-

@@ -34,7 +34,7 @@ const blogSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      default: "Editorial",
+      default: "ACCOUNTING",
       trim: true,
     },
     description: {
@@ -79,6 +79,37 @@ const blogSchema = new mongoose.Schema(
     dislikes: {
       type: Number,
       default: 0,
+    },
+    // NEW: Autonomous system fields
+    audienceCategory: {
+      type: String,
+      default: "",
+    },
+    targetLocation: {
+      type: String,
+      default: "",
+    },
+    generatedBy: {
+      type: String,
+      enum: ["manual", "autonomous"],
+      default: "manual",
+    },
+    pipelineRunId: {
+      type: String,
+      default: "",
+    },
+    opportunityScore: {
+      type: Number,
+      default: 0,
+    },
+    // SEO tracking
+    seoKeywords: {
+      type: [String],
+      default: [],
+    },
+    emotionalHook: {
+      type: String,
+      default: "",
     },
     createdAt: {
       type: Date,

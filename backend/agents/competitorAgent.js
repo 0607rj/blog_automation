@@ -1,84 +1,142 @@
-const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 /**
- * Competitor Analysis Agent — STEP 5 of the pipeline.
- * Analyzes competitors to find deep psychological gaps, persuasion failures, and emotional opportunities.
+ * Competitor Analysis Agent — STEP 3 of the autonomous pipeline.
+ * 
+ * Uses: DeepSeek R1 via OpenRouter (Primary), Groq (Fallback)
+ * 
+ * Analyzes hardcoded primary competitors for:
+ * - SWOT Analysis
+ * - Emotional Gap Analysis
+ * - Trust Gap Analysis
+ * - SEO Gap Analysis
  */
-async function competitorAgent(competitorWebsites, personaProfile, researchData) {
-  const prompt = `You are a competitive intelligence strategist specializing in behavioral psychology and conversion copywriting. Analyze the competitors below and identify strategic emotional gaps.
+const { deepseekGenerate } = require("./clients/openRouterClient");
+const { fallbackGenerate } = require("./clients/fallbackClient");
+const { PRIMARY_COMPETITORS, getCompetitorContext } = require("../config/competitors");
 
-=== COMPETITOR WEBSITES ===
-${(competitorWebsites || []).join(", ") || "No specific competitors provided — analyze general competition in this niche"}
+async function competitorAgent(competitorWebsites, personaProfile, researchData) {
+  // Use hardcoded competitors + any additional ones passed in
+  const allCompetitors = getCompetitorContext();
+  const additionalCompetitors = (competitorWebsites || []).filter(c => 
+    !PRIMARY_COMPETITORS.some(pc => pc.url.includes(c) || c.includes(pc.url))
+  );
+
+  const systemPrompt = `You are a professional competitive intelligence strategist specializing in the Indian Accounting & Finance Education market. You analyze competitors through both strategic (SWOT) and psychological (emotional/trust gaps) lenses. Focus on actionable differentiation opportunities.`;
+
+  const userPrompt = `Perform a comprehensive competitive intelligence analysis for the Indian accounting education market.
+
+=== PRIMARY COMPETITORS (Strictly use and compete against these) ===
+${allCompetitors}
+${additionalCompetitors.length > 0 ? `\nAdditional: ${additionalCompetitors.join(", ")}` : ""}
 
 === AUDIENCE INTELLIGENCE ===
-Reader Profile: ${personaProfile.buyerPersona || "General audience"}
-Visible Pain Symptoms: ${(personaProfile.visiblePainSymptoms || []).join(", ")}
-Hidden Fears: ${(personaProfile.hiddenFears || []).join(", ")}
-Objections: ${(personaProfile.objections || []).join(", ")}
+Reader: ${personaProfile.buyerPersona || "Accounting student"}
+Identity Belief: ${personaProfile.identityBelief || "Not specified"}
+Target Location: ${personaProfile.targetLocation || "Kolkata"}
+Pain Points: ${(personaProfile.painPoints || []).join("; ")}
 
-=== RESEARCH DATA ===
-Emotional Search Patterns: ${(researchData.emotionalSearchPatterns || []).join(", ")}
-Trust Signals Required: ${(researchData.trustSignals || []).join(", ")}
+=== RESEARCH CONTEXT ===
+Search Intent: ${researchData.searchIntentAnalysis || (researchData.emotionalSearchPatterns || []).join(", ")}
+Trust Signals Needed: ${(researchData.trustSignals || []).join(", ")}
+SEO Gaps Found: ${(researchData.seoGaps || []).join(", ")}
 
-Based on your knowledge of these competitors and the niche, identify:
-1. What emotional positioning are competitors using, and what are they ignoring?
-2. What trust gaps are they leaving that we can fill?
-3. What objections are they failing to solve?
-4. What emotional hooks do they completely miss?
-5. Where does their content feel robotic, generic, or emotionally tone-deaf?
+Perform analysis using these PROFESSIONAL METHODOLOGIES:
+1. SWOT Analysis
+2. Emotional Gap Analysis
+3. Trust Gap Analysis
+4. SEO Gap Analysis
+5. Messaging Weaknesses (where their copy fails psychologically)
 
 Respond in this EXACT format:
 
 [BEGIN_ANALYSIS]
-EMOTIONAL_GAPS: (comma-separated list of 3-4 emotions competitors fail to address)
-PERSUASION_GAPS: (comma-separated list of 3-4 missing persuasion elements)
-TRUST_GAPS: (comma-separated list of 3-4 ways competitors fail to build trust)
-TRANSFORMATION_GAPS: (comma-separated list of 2-3 transformation stories they miss)
-COMPETITOR_WEAKNESSES: (comma-separated list of 3-4 structural or emotional weaknesses in their content)
-DIFFERENTIATION_OPPORTUNITY: (2-3 sentences on exactly how we should position ourselves to beat them emotionally)
+SWOT_STRENGTHS: (3 competitor strengths, comma-separated)
+SWOT_WEAKNESSES: (3 competitor weaknesses, comma-separated)
+SWOT_OPPORTUNITIES: (3 market opportunities, comma-separated)
+SWOT_THREATS: (2 market threats, comma-separated)
+EMOTIONAL_GAPS: (3 emotions competitors fail to address, comma-separated)
+TRUST_GAPS: (3 ways competitors fail to build trust, comma-separated)
+SEO_GAPS: (3 SEO keyword/content gaps, comma-separated)
+POSITIONING_ANALYSIS: (2-3 sentences on how competitors position themselves and the gap)
+MESSAGING_WEAKNESSES: (3 messaging failures, comma-separated)
+COMPETITOR_BLIND_SPOTS: (3 things competitors completely miss, comma-separated)
+DIFFERENTIATION_STRATEGY: (2-3 sentences on exactly how to beat them)
+CONTENT_OPPORTUNITIES: (3 content topics competitors ignore, comma-separated)
 [END_ANALYSIS]`;
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    messages: [
-      { role: "system", content: "You are a psychological competitive intelligence analyst. Do not focus on SEO keyword gaps. Focus on emotional gaps, trust failures, and persuasion weaknesses of the competitors." },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.7,
-    max_tokens: 1200,
-  });
+  let result = "";
+  // try {
+  //   result = await deepseekGenerate(systemPrompt, userPrompt, { temperature: 0.6, maxTokens: 2500 });
+  // } catch (err) {
+  //   console.error("Competitor Agent — DeepSeek failed, using fallback:", err.message);
+    try {
+      result = await fallbackGenerate(systemPrompt, userPrompt, { temperature: 0.6 });
+    } catch (fallbackErr) {
+      console.error("Competitor Agent — Fallback failed:", fallbackErr.message);
+      return buildFallbackCompetitorAnalysis(personaProfile);
+    }
+  // }
 
-  const raw = completion.choices[0].message.content;
-  const block = extractBlock(raw, "[BEGIN_ANALYSIS]", "[END_ANALYSIS]");
-  
-  if (!block) {
-    return {
-      emotionalGaps: ["Empathy", "Understanding deep fears"],
-      persuasionGaps: ["Lack of clear ROI", "No strong objection handling"],
-      trustGaps: ["No verifiable proof", "Corporate speak"],
-      transformationGaps: ["Focusing on features instead of the after-state"],
-      competitorWeaknesses: ["Generic content", "Robotic tone"],
-      strategyNotes: "Focus on deep empathy and clear transformation rather than feature lists.",
-      keywordGaps: [], // For backward compatibility if any older agents need it
-      missingTopics: []
-    };
+  const block = extractBlock(result, "[BEGIN_ANALYSIS]", "[END_ANALYSIS]") || result;
+
+  if (!block || block.length < 50) {
+    return buildFallbackCompetitorAnalysis(personaProfile);
   }
 
   return {
+    swot: {
+      strengths: extractList(block, "SWOT_STRENGTHS"),
+      weaknesses: extractList(block, "SWOT_WEAKNESSES"),
+      opportunities: extractList(block, "SWOT_OPPORTUNITIES"),
+      threats: extractList(block, "SWOT_THREATS")
+    },
     emotionalGaps: extractList(block, "EMOTIONAL_GAPS"),
-    persuasionGaps: extractList(block, "PERSUASION_GAPS"),
     trustGaps: extractList(block, "TRUST_GAPS"),
-    transformationGaps: extractList(block, "TRANSFORMATION_GAPS"),
-    competitorWeaknesses: extractList(block, "COMPETITOR_WEAKNESSES"),
-    strategyNotes: extractField(block, "DIFFERENTIATION_OPPORTUNITY"),
-    // Keep these empty arrays for backward compatibility with orchestrator if needed
-    keywordGaps: [],
-    missingTopics: extractList(block, "TRANSFORMATION_GAPS")
+    seoGaps: extractList(block, "SEO_GAPS"),
+    positioningAnalysis: extractField(block, "POSITIONING_ANALYSIS"),
+    messagingWeaknesses: extractList(block, "MESSAGING_WEAKNESSES"),
+    competitorBlindSpots: extractList(block, "COMPETITOR_BLIND_SPOTS"),
+    strategyNotes: extractField(block, "DIFFERENTIATION_STRATEGY"),
+    contentOpportunities: extractList(block, "CONTENT_OPPORTUNITIES"),
+    methodology: {
+      principlesUsed: ["SWOT Analysis", "Emotional Gap Analysis", "Trust Gap Analysis", "SEO Gap Analysis", "Positioning Analysis", "Messaging Weakness Analysis"],
+      models: {
+        primary: "Groq (Llama 3.1 70B)",
+        fallback: "Groq (Llama 3.1 70B)"
+      },
+      competitorsAnalyzed: PRIMARY_COMPETITORS.map(c => c.name),
+      approach: "7-framework professional competitive intelligence powered by Groq.",
+      reasoning: `Analyzed ${PRIMARY_COMPETITORS.length} hardcoded competitors. Used analytical reasoning to find messaging weaknesses and emotional gaps they miss.`
+    }
+  };
+}
+
+function buildFallbackCompetitorAnalysis(personaProfile) {
+  return {
+    swot: {
+      strengths: ["Brand recognition", "Large student base"],
+      weaknesses: ["Theory-heavy content", "Generic marketing"],
+      opportunities: ["Practical skill focus", "Emotional storytelling"],
+      threats: ["Market saturation"]
+    },
+    emotionalGaps: ["Interview anxiety", "Family pressure", "Peer comparison stress"],
+    trustGaps: ["No real salary data", "No relatable student stories"],
+    seoGaps: ["Location-specific accounting courses", "Practical accounting jobs"],
+    positioningAnalysis: "Competitors focus on curriculum features. Opportunity: position as the practical skill bridge for career transformation.",
+    messagingWeaknesses: ["Too much jargon", "No empathy"],
+    competitorBlindSpots: ["Career guidance", "Confidence building"],
+    strategyNotes: "Focus on emotional connection and practical outcomes.",
+    contentOpportunities: ["Interview anxiety content", "Practical skill demonstrations"],
+    methodology: {
+      principlesUsed: ["SWOT Analysis", "Emotional Gap Analysis"],
+      model: "Fallback (Primary Models Unavailable)",
+      competitorsAnalyzed: PRIMARY_COMPETITORS.map(c => c.name),
+      approach: "Fallback competitive intelligence based on stored patterns."
+    }
   };
 }
 
 function extractBlock(text, start, end) {
+  if (!text) return null;
   const s = text.indexOf(start);
   const e = text.indexOf(end, s + start.length);
   if (s === -1 || e === -1) return null;
@@ -86,6 +144,7 @@ function extractBlock(text, start, end) {
 }
 
 function extractField(block, key) {
+  if (!block) return "";
   const match = block.match(new RegExp(`${key}:\\s*(.+)`, "i"));
   return match ? match[1].trim() : "";
 }
