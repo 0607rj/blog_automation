@@ -1,5 +1,4 @@
-const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { groqGenerate } = require("./clients/groqClient");
 
 /**
  * Orchestrator Agent — STEP 4 of the autonomous pipeline. The Central Brain.
@@ -75,19 +74,6 @@ WORD_COUNT: (1000-1500)
 CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
 [END_BLUEPRINT]`;
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    messages: [
-      { role: "system", content: `You are a strategic content brain for accounting education targeting ${targetLocation}. You combine psychology, research, competitor gaps, and memory into a precise content blueprint. Every decision must be data-driven and psychologically grounded. Focus exclusively on accounting, finance, GST, Tally, taxation, and commerce career content. Always include location-specific context.` },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.7,
-    max_tokens: 1200,
-  });
-
-  const raw = completion.choices[0].message.content;
-  const block = extractBlock(raw, "[BEGIN_BLUEPRINT]", "[END_BLUEPRINT]");
-
   const fallbackResult = {
     blogTitle: `The ${domainResult.audienceCategory}'s Guide to Breaking Into Accounting in ${targetLocation}`,
     emotionalHook: `Connecting with the specific frustrations of ${domainResult.audienceType} in ${targetLocation}.`,
@@ -116,6 +102,19 @@ CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
     }
   };
 
+  let raw = "";
+  try {
+    raw = await groqGenerate(
+      `You are a strategic content brain for accounting education targeting ${targetLocation}. You combine psychology, research, competitor gaps, and memory into a precise content blueprint. Every decision must be data-driven and psychologically grounded. Focus exclusively on accounting, finance, GST, Tally, taxation, and commerce career content. Always include location-specific context.`,
+      prompt,
+      { model: "llama-3.3-70b-versatile", temperature: 0.7 }
+    );
+  } catch (err) {
+    console.error("Orchestrator Agent — Groq generation failed:", err.message);
+    return fallbackResult;
+  }
+  const block = extractBlock(raw, "[BEGIN_BLUEPRINT]", "[END_BLUEPRINT]");
+
   if (!block) return fallbackResult;
 
   return {
@@ -137,7 +136,7 @@ CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
     methodology: {
       approach: "Multi-Intelligence Synthesis Engine",
       inputs: ["Deep Persona Psychology", "Dual-Model Research", "7-Framework Competitor Analysis", "Self-Learning Memory", "Location Intelligence"],
-      reasoning: `Synthesized ${domainResult.audienceCategory} persona insights with research data, competitor gaps, and localized context. Avoided ${(memory.previousTitles || []).length} previously generated titles.`,
+      reasoning: `Synthesized ${domainResult.audienceCategory} persona insights with research data, competitor gaps, and localized context. Avoided ${(memory.previousTitles || []).length} previously generated titles using Llama 3.3 Intelligence.`,
       decisions: {
         emotionalAngle: extractField(block, "EMOTIONAL_ANGLE"),
         rankingApproach: extractField(block, "POSITIONING_STRATEGY"),

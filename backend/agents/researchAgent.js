@@ -7,9 +7,7 @@
  * DeepSeek R1: Analytical reasoning, structured insights, contextual gap analysis
  * Groq: Fallback intelligence
  */
-const { geminiGenerate } = require("./clients/geminiClient");
-const { deepseekGenerate } = require("./clients/openRouterClient");
-const { fallbackGenerate } = require("./clients/fallbackClient");
+const { groqGenerate } = require("./clients/groqClient");
 const { getLocationByCity } = require("../config/locations");
 
 async function researchAgent(personaProfile, businessContext, locationContext = {}) {
@@ -51,28 +49,23 @@ Perform research using these methodologies:
 Respond in this EXACT format:
 
 [BEGIN_RESEARCH]
-SEARCH_INTENT_ANALYSIS: (4 search queries with the emotional WHY behind each, semicolon-separated)
-EMOTIONAL_SEARCH_DRIVERS: (4 emotional drivers behind their searches — DEEP, not surface-level, semicolon-separated)
-CAREER_ANXIETY_PATTERNS: (3 specific career anxiety patterns in ${targetLocation}, semicolon-separated)
-LOCATION_SEARCH_PATTERNS: (4 ${targetLocation}-specific search behaviors, semicolon-separated)
-PLATFORM_TRUST_MAP: (which platforms they trust in ${targetLocation} and why — Google, YouTube, LinkedIn, Reddit, comma-separated)
-TRENDING_TOPICS: (4 trending accounting education topics, comma-separated)
-CONTENT_FORMATS_PREFERRED: (3 content formats they prefer, comma-separated)
-EMOTIONAL_TRANSFORMATION_PSYCHOLOGY: (3-4 sentences on the emotional transformation they desperately seek)
+SEARCH_INTENT_ANALYSIS: (8 search queries with the emotional WHY behind each, semicolon-separated)
+EMOTIONAL_SEARCH_DRIVERS: (8 emotional drivers behind their searches — DEEP, not surface-level, semicolon-separated)
+CAREER_ANXIETY_PATTERNS: (6 specific career anxiety patterns in ${targetLocation}, semicolon-separated)
+LOCATION_SEARCH_PATTERNS: (6 ${targetLocation}-specific search behaviors, semicolon-separated)
+PLATFORM_TRUST_MAP: (8 platforms they trust in ${targetLocation} and why — Google, YouTube, LinkedIn, Reddit, etc., comma-separated)
+TRENDING_TOPICS: (8 trending accounting education topics, comma-separated)
+CONTENT_FORMATS_PREFERRED: (5 content formats they prefer, comma-separated)
+EMOTIONAL_TRANSFORMATION_PSYCHOLOGY: (5-6 sentences on the deep emotional transformation they desperately seek)
 [END_RESEARCH]`;
 
   let geminiResult = "";
-  // try {
-  //   geminiResult = await geminiGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7, maxTokens: 2500 });
-  // } catch (err) {
-  //   console.error("Research Agent — Gemini failed, using fallback:", err.message);
-    try {
-      geminiResult = await fallbackGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7 });
-    } catch (fallbackErr) {
-      console.error("Research Agent — Fallback failed:", fallbackErr.message);
-      geminiResult = "";
-    }
-  // }
+  try {
+    geminiResult = await groqGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.8, maxTokens: 4000 });
+  } catch (err) {
+    console.error("Research Agent — Groq Phase 1 failed:", err.message);
+    geminiResult = "";
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // PHASE 2: DEEPSEEK R1 — Analytical + Structured Insights
@@ -103,17 +96,12 @@ BEHAVIORAL_PATTERNS: (3 platform-specific behaviors, comma-separated)
 [END_ANALYSIS]`;
 
   let deepseekResult = "";
-  // try {
-  //   deepseekResult = await deepseekGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.5, maxTokens: 2000 });
-  // } catch (err) {
-  //   console.error("Research Agent — DeepSeek failed, using fallback:", err.message);
-    try {
-      deepseekResult = await fallbackGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.5 });
-    } catch (fallbackErr) {
-      console.error("Research Agent — Fallback failed:", fallbackErr.message);
-      deepseekResult = "";
-    }
-  // }
+  try {
+    deepseekResult = await groqGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.5 });
+  } catch (err) {
+    console.error("Research Agent — Groq Phase 2 failed:", err.message);
+    deepseekResult = "";
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // MERGE: Combine both outputs into structured research JSON
@@ -140,12 +128,13 @@ BEHAVIORAL_PATTERNS: (3 platform-specific behaviors, comma-separated)
     behavioralPatterns: extractList(deepseekBlock, "BEHAVIORAL_PATTERNS"),
     contextualQueries: extractList(deepseekBlock, "AI_SEARCH_QUERIES"),
     trendingTopics: extractList(geminiBlock, "TRENDING_TOPICS"),
+    dataSources: ["Google Search", "YouTube", "LinkedIn", "Reddit", "Accounting Forums", "Career Discussions"],
     methodology: {
       principlesUsed: ["Search Intent Mapping", "Emotional Pattern Analysis", "Trend Detection", "Context Aggregation", "SEO Opportunity Analysis", "Source Reliability Filtering", "Location-based Search Analysis", "Career Anxiety Analysis"],
       dataSources: ["Google Search", "YouTube", "LinkedIn", "Reddit", "Accounting Forums", "Career Discussions"],
       models: {
-        primary: "Groq (Llama 3.1 70B)",
-        fallback: "Groq (Llama 3.1 70B)"
+        primary: "Groq (Llama 3.3 70B)",
+        fallback: "Groq (Llama 3.3 70B)"
       },
       approach: "Research intelligence powered by Groq.",
       reasoning: "Research focused on deep persona pain points and localized anxieties. Analysis exploits gaps competitors miss by addressing the emotional core of commerce career searches."

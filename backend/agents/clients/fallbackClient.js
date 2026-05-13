@@ -12,7 +12,7 @@ async function fallbackGenerate(systemPrompt, userPrompt, options = {}) {
 
   try {
     const completion = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile", // Use a strong Groq model for fallback
+      model: "llama-3.3-70b-versatile", // Use a strong Groq model for fallback
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },

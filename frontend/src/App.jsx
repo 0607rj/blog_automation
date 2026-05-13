@@ -82,8 +82,8 @@ export default function App() {
       <div className="min-h-screen bg-white">
         {/* ── Fixed Navigation ── */}
         <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-2xl border-b border-stone-100 z-50 px-6 lg:px-12 h-20 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-black tracking-tighter cursor-pointer">
-            AccountIQ<span className="text-emerald-500">.</span>
+          <Link to="/" className="text-2xl font-black tracking-tighter cursor-pointer serif">
+            The Manuscript<span className="text-emerald-500">.</span>
           </Link>
           
           <div className="flex items-center gap-8">
@@ -181,14 +181,14 @@ export default function App() {
 
         <footer className="mt-40 py-24 border-t border-stone-100 bg-stone-50 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-stone-400 font-black mb-4">
-            AccountIQ · Autonomous AI SEO Content Intelligence
+            The Manuscript · A Premium Editorial Collective
           </p>
           <div className="flex justify-center gap-8 mb-12">
             <Link to="/" className="text-xs font-bold text-stone-500 hover:text-stone-900">Home</Link>
             <Link to="/blogs" className="text-xs font-bold text-stone-500 hover:text-stone-900">Archive</Link>
             <Link to="/dashboard" className="text-xs font-bold text-stone-500 hover:text-stone-900">Dashboard</Link>
           </div>
-          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} AccountIQ. Autonomous AI for Accounting Education.</p>
+          <p className="text-[10px] text-stone-300">© {new Date().getFullYear()} The Manuscript. All Rights Reserved.</p>
         </footer>
       </div>
     </>

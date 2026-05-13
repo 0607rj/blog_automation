@@ -59,7 +59,7 @@ export default function BlogDetail() {
   return (
     <div className="bg-white min-h-screen">
       <nav className="border-b border-stone-100 py-6 px-8 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <Link to="/" className="text-xl font-black tracking-tighter text-stone-900">AccountIQ<span className="text-emerald-500">.</span></Link>
+        <Link to="/" className="text-xl font-black tracking-tighter text-stone-900 serif">The Manuscript<span className="text-emerald-500">.</span></Link>
         <Link to="/blogs" className="text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-all">Back to Library</Link>
       </nav>
 
@@ -177,9 +177,9 @@ export default function BlogDetail() {
       <footer className="bg-stone-950 text-white pt-32 pb-20 px-8 mt-20">
         <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-20">
           <div className="md:col-span-5">
-            <h2 className="text-4xl font-bold mb-8 serif">AccountIQ<span className="text-emerald-500">.</span></h2>
+            <h2 className="text-4xl font-bold mb-8 serif">The Manuscript<span className="text-emerald-500">.</span></h2>
             <p className="text-stone-400 serif text-lg leading-relaxed mb-8">
-              Transforming raw business data into high-end editorial intelligence. Our autonomous agents research, synthesize, and write content that resonates with human psychology and dominates AI search.
+              A high-fidelity editorial collective dedicated to exploring the nuances of the professional landscape. We synthesize complex data into clear, narrative-driven insights that resonate with the modern achiever.
             </p>
             <div className="flex gap-4">
               {['Twitter', 'LinkedIn', 'Instagram'].map(s => (
@@ -208,7 +208,7 @@ export default function BlogDetail() {
           </div>
         </div>
         <div className="max-w-6xl mx-auto mt-32 pt-8 border-t border-stone-900 flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.3em] text-stone-600">
-          <p>© 2024 AccountIQ. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} The Manuscript. All rights reserved.</p>
           <p>Hand-crafted Excellence</p>
         </div>
       </footer>

@@ -9,8 +9,7 @@
  * - Trust Gap Analysis
  * - SEO Gap Analysis
  */
-const { deepseekGenerate } = require("./clients/openRouterClient");
-const { fallbackGenerate } = require("./clients/fallbackClient");
+const { groqGenerate } = require("./clients/groqClient");
 const { PRIMARY_COMPETITORS, getCompetitorContext } = require("../config/competitors");
 
 async function competitorAgent(competitorWebsites, personaProfile, researchData) {
@@ -49,32 +48,27 @@ Perform analysis using these PROFESSIONAL METHODOLOGIES:
 Respond in this EXACT format:
 
 [BEGIN_ANALYSIS]
-SWOT_STRENGTHS: (3 competitor strengths, comma-separated)
-SWOT_WEAKNESSES: (3 competitor weaknesses, comma-separated)
-SWOT_OPPORTUNITIES: (3 market opportunities, comma-separated)
-SWOT_THREATS: (2 market threats, comma-separated)
-EMOTIONAL_GAPS: (3 emotions competitors fail to address, comma-separated)
-TRUST_GAPS: (3 ways competitors fail to build trust, comma-separated)
-SEO_GAPS: (3 SEO keyword/content gaps, comma-separated)
-POSITIONING_ANALYSIS: (2-3 sentences on how competitors position themselves and the gap)
-MESSAGING_WEAKNESSES: (3 messaging failures, comma-separated)
-COMPETITOR_BLIND_SPOTS: (3 things competitors completely miss, comma-separated)
-DIFFERENTIATION_STRATEGY: (2-3 sentences on exactly how to beat them)
-CONTENT_OPPORTUNITIES: (3 content topics competitors ignore, comma-separated)
+SWOT_STRENGTHS: (6 competitor strengths, comma-separated)
+SWOT_WEAKNESSES: (6 competitor weaknesses, comma-separated)
+SWOT_OPPORTUNITIES: (6 market opportunities, comma-separated)
+SWOT_THREATS: (4 market threats, comma-separated)
+EMOTIONAL_GAPS: (6 emotions competitors fail to address, comma-separated)
+TRUST_GAPS: (6 ways competitors fail to build trust, comma-separated)
+SEO_GAPS: (6 SEO keyword/content gaps, comma-separated)
+POSITIONING_ANALYSIS: (4-5 sentences on how competitors position themselves and the gap)
+MESSAGING_WEAKNESSES: (6 messaging failures, comma-separated)
+COMPETITOR_BLIND_SPOTS: (6 things competitors completely miss, comma-separated)
+DIFFERENTIATION_STRATEGY: (4-5 sentences on exactly how to beat them with specific tactics)
+CONTENT_OPPORTUNITIES: (6 content topics competitors ignore, comma-separated)
 [END_ANALYSIS]`;
 
   let result = "";
-  // try {
-  //   result = await deepseekGenerate(systemPrompt, userPrompt, { temperature: 0.6, maxTokens: 2500 });
-  // } catch (err) {
-  //   console.error("Competitor Agent — DeepSeek failed, using fallback:", err.message);
-    try {
-      result = await fallbackGenerate(systemPrompt, userPrompt, { temperature: 0.6 });
-    } catch (fallbackErr) {
-      console.error("Competitor Agent — Fallback failed:", fallbackErr.message);
-      return buildFallbackCompetitorAnalysis(personaProfile);
-    }
-  // }
+  try {
+    result = await groqGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
+  } catch (err) {
+    console.error("Competitor Agent — Groq generation failed:", err.message);
+    return buildFallbackCompetitorAnalysis(personaProfile);
+  }
 
   const block = extractBlock(result, "[BEGIN_ANALYSIS]", "[END_ANALYSIS]") || result;
 
@@ -97,11 +91,12 @@ CONTENT_OPPORTUNITIES: (3 content topics competitors ignore, comma-separated)
     competitorBlindSpots: extractList(block, "COMPETITOR_BLIND_SPOTS"),
     strategyNotes: extractField(block, "DIFFERENTIATION_STRATEGY"),
     contentOpportunities: extractList(block, "CONTENT_OPPORTUNITIES"),
+    analyzedWebsites: PRIMARY_COMPETITORS.map(c => `${c.name} (${c.url})`),
     methodology: {
       principlesUsed: ["SWOT Analysis", "Emotional Gap Analysis", "Trust Gap Analysis", "SEO Gap Analysis", "Positioning Analysis", "Messaging Weakness Analysis"],
       models: {
-        primary: "Groq (Llama 3.1 70B)",
-        fallback: "Groq (Llama 3.1 70B)"
+        primary: "Groq (Llama 3.3 70B)",
+        fallback: "Groq (Llama 3.3 70B)"
       },
       competitorsAnalyzed: PRIMARY_COMPETITORS.map(c => c.name),
       approach: "7-framework professional competitive intelligence powered by Groq.",

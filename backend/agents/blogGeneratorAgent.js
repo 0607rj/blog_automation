@@ -1,5 +1,4 @@
-const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { groqGenerate } = require("./clients/groqClient");
 
 /**
  * Content Generation Agent — STEP 8 of the pipeline.
@@ -79,20 +78,27 @@ Q: (accounting-relevant conversational question 3)
 A: (concise 2-3 sentence answer)
 [END_FAQ]`;
 
-  const completion = await groq.chat.completions.create({
-    model: "llama-3.1-8b-instant",
-    messages: [
-      { role: "system", content: "You are a master content writer for the Indian accounting education market. Your content feels like a warm, knowledgeable mentor speaking directly to the reader's deepest insecurities and ambitions about their accounting career. Every paragraph drives emotional transformation. Use accounting-specific examples (GST, Tally, balance sheets, audit, taxation)." },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.7,
-    max_tokens: 4000,
-  });
+  let raw = "";
+  try {
+    raw = await groqGenerate(
+      "You are a master content writer for the Indian accounting education market. Your content feels like a warm, knowledgeable mentor speaking directly to the reader's deepest insecurities and ambitions about their accounting career. Every paragraph drives emotional transformation. Use accounting-specific examples (GST, Tally, balance sheets, audit, taxation).",
+      prompt,
+      { model: "llama-3.3-70b-versatile", temperature: 0.7, maxTokens: 4000 }
+    );
+  } catch (err) {
+    console.error("Blog Generator Agent — Groq generation failed:", err.message);
+    throw new Error("Content generation failed: " + err.message);
+  }
 
-  const raw = completion.choices[0].message.content;
+  let content = extractBlock(raw, "[BEGIN_CONTENT]", "[END_CONTENT]");
+  
+  // Robust fallback: If [BEGIN_CONTENT] is missing, try to find the longest block of text
+  if (!content && raw.length > 500) {
+    const parts = raw.split(/\[BEGIN_CONTENT\]|\[END_CONTENT\]/);
+    content = parts.length >= 2 ? parts[1].trim() : raw.trim();
+  }
 
-  const content = extractBlock(raw, "[BEGIN_CONTENT]", "[END_CONTENT]");
-  if (!content) throw new Error("Blog generator failed to produce content.");
+  if (!content || content.length < 100) throw new Error("Blog generator failed to produce meaningful content.");
 
   const metaDescription = extractBlock(raw, "[BEGIN_META]", "[END_META]");
   const metaDesc = metaDescription ? extractField(metaDescription, "META_DESCRIPTION") : "";

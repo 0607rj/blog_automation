@@ -9,8 +9,7 @@
  * - Competitor messaging context
  * - Deep psychological pain points
  */
-const { geminiGenerate } = require("./clients/geminiClient");
-const { fallbackGenerate } = require("./clients/fallbackClient");
+const { groqGenerate } = require("./clients/groqClient");
 
 async function personaAgent(templates, businessContext, locationContext = {}) {
   const targetLocation = locationContext.city || businessContext.targetLocation || "Kolkata";
@@ -42,27 +41,22 @@ Respond in this EXACT format:
 
 [BEGIN_PERSONA]
 BUYER_PERSONA: (A punchy name/label for this enriched persona)
-CHARACTER_SNAPSHOT: (3 sentences that make them feel alive in ${targetLocation})
-ENRICHED_IDENTITY_BELIEF: (1 deep belief that drives them)
-DEEP_PAIN_ANALYSIS: (3 sentences analyzing the emotional toll of their pain points)
-LOCATION_SPECIFIC_ANXIETY: (2 specific fears unique to the ${targetLocation} job market)
-HIDDEN_FEARS: (4 deep fears, comma-separated)
-LIVE_SITUATIONS: (3 real-life situations they experience in ${targetLocation}, semicolon-separated)
-EMOTIONAL_TRIGGERS: (4 things that trigger them to take action, comma-separated)
+CHARACTER_SNAPSHOT: (4-5 sentences that make them feel alive in ${targetLocation}, describing their daily grind)
+ENRICHED_IDENTITY_BELIEF: (2 deep-seated beliefs that drive their behavior)
+DEEP_PAIN_ANALYSIS: (4-5 sentences analyzing the emotional toll of their pain points in ${targetLocation})
+LOCATION_SPECIFIC_ANXIETY: (3 specific fears unique to the ${targetLocation} job market)
+HIDDEN_FEARS: (8 deep psychological fears, semicolon-separated)
+LIVE_SITUATIONS: (6 real-life situations they experience in ${targetLocation}, semicolon-separated)
+EMOTIONAL_TRIGGERS: (8 specific hooks that trigger them to take action, semicolon-separated)
 [END_PERSONA]`;
 
   let result = "";
-  // try {
-  //   result = await geminiGenerate(systemPrompt, userPrompt, { temperature: 0.7, maxTokens: 2500 });
-  // } catch (err) {
-  //   console.error("Persona Agent — Gemini failed, using fallback:", err.message);
-    try {
-      result = await fallbackGenerate(systemPrompt, userPrompt, { temperature: 0.7 });
-    } catch (fallbackErr) {
-      console.error("Persona Agent — Fallback failed:", fallbackErr.message);
-      result = "";
-    }
-  // }
+  try {
+    result = await groqGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
+  } catch (err) {
+    console.error("Persona Agent — Groq generation failed:", err.message);
+    result = "";
+  }
 
   const block = extractBlock(result, "[BEGIN_PERSONA]", "[END_PERSONA]") || result;
 
@@ -75,11 +69,17 @@ EMOTIONAL_TRIGGERS: (4 things that trigger them to take action, comma-separated)
     hiddenFears: extractList(block, "HIDDEN_FEARS"),
     liveSituations: extractListSemicolon(block, "LIVE_SITUATIONS"),
     emotionalTriggers: extractList(block, "EMOTIONAL_TRIGGERS"),
-    painPoints: baseTemplate.painArchitecture?.hiddenFears || [],
+    // Comprehensive template data
+    fullPsychology: baseTemplate.psychologyLayer || {},
+    fullPainArchitecture: baseTemplate.painArchitecture || {},
+    lifeSituation: baseTemplate.lifeSituation || {},
+    voiceOfCustomer: baseTemplate.voiceOfCustomer || {},
+    transformationGoal: baseTemplate.transformationGoal || {},
+    buyingBehavior: baseTemplate.buyingBehavior || {},
     methodology: {
       approach: "Psychological Persona Enrichment",
-      model: "Groq (Llama 3.1 70B)",
-      reasoning: `Enriched the base template with deep localized context. Focused on the emotional toll of their ${baseTemplate.painArchitecture?.hiddenFears?.length || 0} pain points to create a "living" profile that drives high-conversion content.`
+      model: "Groq (Llama 3.3 70B)",
+      reasoning: `Enriched the base template with deep localized context for ${targetLocation}. Focused on the emotional toll of their ${baseTemplate.painArchitecture?.hiddenFears?.length || 0} pain points to create a "living" profile that drives high-conversion content.`
     }
   };
 }

@@ -1,5 +1,4 @@
-const Groq = require("groq-sdk");
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const { groqGenerate } = require("./clients/groqClient");
 
 /**
  * Validation Agent — STEP 9 of the pipeline.
@@ -43,6 +42,7 @@ async function validationAgent(blogResult, blueprint, persona, research, competi
     score -= 10;
   }
 
+  let detailedScores = {};
   // --- 3. Deep Psychological Quality Check (LLM Based) ---
   if (blogResult.content && blogResult.content.length > 500) {
     try {
@@ -82,18 +82,26 @@ Respond EXACTLY in JSON:
   "critiques": ["critique 1", "critique 2"]
 }`;
 
-      const completion = await groq.chat.completions.create({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: "You are a harsh editorial reviewer for accounting education content. You expect psychological depth, practical value, and emotional resonance. Output valid JSON only." },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0.1,
-        max_tokens: 500,
-        response_format: { type: "json_object" }
-      });
+      let rawFeedback = "";
+      try {
+        rawFeedback = await groqGenerate(
+          "You are a harsh editorial reviewer for accounting education content. You expect psychological depth, practical value, and emotional resonance. Output valid JSON only.",
+          prompt,
+          { model: "llama-3.3-70b-versatile", temperature: 0.1 }
+        );
+      } catch (err) {
+        console.error("Validation Agent — Groq generation failed:", err.message);
+        throw new Error("Validation generation failed.");
+      }
 
-      const feedback = JSON.parse(completion.choices[0].message.content);
+      // Robust JSON extraction
+      let feedback = {};
+      try {
+        const jsonMatch = rawFeedback.match(/\{[\s\S]*\}/);
+        feedback = JSON.parse(jsonMatch ? jsonMatch[0] : rawFeedback);
+      } catch (e) {
+        console.error("Validation Agent JSON Parse Error:", e.message);
+      }
 
       // Calculate average of all 7 scores
       const scores = [
@@ -122,7 +130,7 @@ Respond EXACTLY in JSON:
       }
 
       // Store detailed scores
-      var detailedScores = {
+      detailedScores = {
         emotionalDepth: feedback.emotionalDepth || 50,
         trustBuilding: feedback.trustBuilding || 50,
         seoQuality: feedback.seoQuality || 50,
@@ -146,7 +154,7 @@ Respond EXACTLY in JSON:
     isValid: score >= 60,
     issues,
     score: Math.max(0, Math.min(100, score)),
-    detailedScores: detailedScores || {},
+    detailedScores,
     keywordsIntegrated: keywordsFound.length,
     totalKeywords: (blueprint.targetKeywords || []).length,
     h2Count,

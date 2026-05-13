@@ -15,9 +15,7 @@
  * 6. Location-Specific Demand (Kolkata/Lucknow specific)
  * 7. Previous Success Patterns (from memory)
  */
-const { geminiGenerate } = require("./clients/geminiClient");
-const { deepseekGenerate } = require("./clients/openRouterClient");
-const { fallbackGenerate } = require("./clients/fallbackClient");
+const { groqGenerate } = require("./clients/groqClient");
 const { getPrimaryLocationContext } = require("../config/locations");
 const { getCompetitorContext } = require("../config/competitors");
 const { memoryAgent } = require("./memoryAgent");
@@ -100,20 +98,12 @@ SEO_GAPS: (3 SEO keyword gaps, comma-separated)
 [END_ANALYSIS]`;
 
   let geminiAnalysis = "";
-  // try {
-  //   geminiAnalysis = await geminiGenerate(geminiSystemPrompt, geminiUserPrompt, {
-  //     temperature: 0.7,
-  //     maxTokens: 3000
-  //   });
-  // } catch (err) {
-  //   console.error("Opportunity Agent — Gemini failed:", err.message);
-    try {
-      geminiAnalysis = await fallbackGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7 });
-    } catch (fallbackErr) {
-      console.error("Opportunity Agent — Fallback failed:", fallbackErr.message);
-      geminiAnalysis = "Analysis unavailable.";
-    }
-  // }
+  try {
+    geminiAnalysis = await groqGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7 });
+  } catch (err) {
+    console.error("Opportunity Agent — Groq Analysis failed:", err.message);
+    geminiAnalysis = "Analysis unavailable.";
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // PHASE 2: DEEPSEEK R1 — Analytical Scoring
@@ -183,13 +173,8 @@ Respond in EXACT JSON format:
 }`;
 
   let scoringResult;
-  // try {
-  //   const rawScoring = await deepseekGenerate(deepseekSystemPrompt, deepseekUserPrompt, {
-  //     temperature: 0.3,
-  //     maxTokens: 2000
-  //   });
-    try {
-      const rawScoring = await fallbackGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.3 });
+  try {
+    const rawScoring = await groqGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.3 });
 
     // Extract JSON from response (may contain <think> tags)
     const jsonMatch = rawScoring.match(/\{[\s\S]*\}/);
@@ -256,6 +241,7 @@ Respond in EXACT JSON format:
 
   return {
     selectedCategory: scoringResult.selectedCategory,
+    selectedLocation,
     categoryScores: scoringResult.categoryScores || [],
     selectionReasoning: scoringResult.selectionReasoning || "",
     marketTrends: scoringResult.marketTrends || [],
@@ -265,12 +251,12 @@ Respond in EXACT JSON format:
     geminiAnalysis: geminiAnalysis.substring(0, 500),
     methodology: {
       approach: "Groq Opportunity Intelligence",
-      models: ["Groq (Llama 3.1 70B)"],
+      models: ["Groq (Llama 3.3 70B)"],
       scoringDimensions: [
         "Search Demand", "Emotional Intensity", "Competitor Gaps",
         "SEO Opportunity", "Trend Growth", "Location Demand", "Previous Success"
       ],
-      reasoning: `Analyzed 3 audience categories across 7 scoring dimensions using Groq (Llama 3.1 70B) for market understanding and analytical scoring. Selected "${scoringResult.selectedCategory}" based on highest potential market intent.`
+      reasoning: `Analyzed 3 audience categories across 7 scoring dimensions using strictly Groq Intelligence (Llama 3.3) for both qualitative and quantitative scoring. Selected "${scoringResult.selectedCategory}" based on highest potential market intent.`
     }
   };
 }

@@ -32,7 +32,7 @@ export default function BlogCard({ blog: initialBlog }) {
             M
           </div>
           <p className="text-[11px] font-bold text-stone-900">
-            In <span className="underline">AI Insights</span> <span className="font-normal text-stone-400 mx-1">by</span> The Manuscript
+            In <span className="underline">Insights</span> <span className="font-normal text-stone-400 mx-1">by</span> The Manuscript
           </p>
         </div>
 

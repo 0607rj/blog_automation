@@ -4,7 +4,7 @@ import api from "../api";
 
 const AGENT_STEPS = [
   { key: "opportunity", label: "Opportunity Analysis", icon: "📊", desc: "Dual-model audience scoring (Gemini + DeepSeek R1)" },
-  { key: "domainDetection", label: "Domain Detection", icon: "🔎", desc: "Deterministic accounting sub-domain routing" },
+  { key: "domainDetection", label: "Domain Detection", icon: "🔎", desc: "Precise sub-domain narrative routing" },
   { key: "personaLoader", label: "Persona Loader", icon: "📋", desc: "Intelligent template selection" },
   { key: "persona", label: "Persona Agent", icon: "👤", desc: "Semi-dynamic persona intelligence (Gemini)" },
   { key: "research", label: "Research Agent", icon: "🔍", desc: "8-methodology dual-model research" },
@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [expandedAgent, setExpandedAgent] = useState(null);
   const [expandedRun, setExpandedRun] = useState(null);
   const [pipelineResult, setPipelineResult] = useState(null);
+  const [timeLeft, setTimeLeft] = useState("");
   const abortRef = useRef(null);
 
   useEffect(() => { fetchAll(); }, []);
@@ -48,6 +49,31 @@ export default function Dashboard() {
     } catch (e) { console.error("Dashboard fetch error:", e); }
     setLoading(false);
   }
+
+  // Countdown timer logic
+  useEffect(() => {
+    if (!stats?.scheduler?.nextScheduledRun) return;
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const next = new Date(stats.scheduler.nextScheduledRun).getTime();
+      const diff = next - now;
+
+      if (diff <= 0) {
+        setTimeLeft("RUNNING...");
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [stats]);
 
   function getApiBase() {
     if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL;
@@ -110,10 +136,18 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <div className={`w-2.5 h-2.5 rounded-full ${pipelineRunning ? "bg-emerald-500 animate-pulse" : "bg-stone-300"}`} />
-            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600">Autonomous Intelligence Dashboard</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.35em] text-emerald-600">Editorial Intelligence Dashboard</p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-stone-900 serif">AccountIQ</h1>
-          <p className="text-stone-500 text-sm mt-1">Production-Level Autonomous AI SEO Content Intelligence</p>
+          <h1 className="text-4xl md:text-5xl font-black text-stone-900 serif">The Manuscript</h1>
+          <div className="flex items-center gap-4 mt-2">
+            <p className="text-stone-500 text-sm">High-Fidelity Editorial Control Center</p>
+            {timeLeft && (
+              <div className="flex items-center gap-2 bg-stone-100 px-3 py-1 rounded-full border border-stone-200">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Next Auto-Run: {timeLeft}</span>
+              </div>
+            )}
+          </div>
         </div>
         <button onClick={handleTrigger} disabled={pipelineRunning}
           className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-emerald-700 transition-all disabled:opacity-40 shadow-lg shadow-emerald-200 active:scale-95">
@@ -228,16 +262,54 @@ export default function Dashboard() {
                           {data.methodology.reasoning && <p className="text-stone-500 mt-1 italic text-[10px]">{data.methodology.reasoning}</p>}
                         </div>
                       )}
-                      {Object.entries(data).filter(([k, v]) => k !== "methodology" && v && (!Array.isArray(v) || v.length > 0)).slice(0, 8).map(([key, val]) => {
-                        if (typeof val === "object" && !Array.isArray(val)) return null;
-                        const display = Array.isArray(val) ? val.join(" · ") : String(val).substring(0, 200);
-                        return (
-                          <div key={key} className="flex gap-3">
-                            <span className="font-black text-stone-400 uppercase text-[9px] tracking-wider w-32 flex-shrink-0">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                            <span className="text-stone-700 leading-relaxed">{display}</span>
-                          </div>
-                        );
-                      })}
+                      <div className="space-y-4">
+                        {Object.entries(data).filter(([k, v]) => k !== "methodology" && v).map(([key, val]) => {
+                          const renderVal = (v) => {
+                            if (Array.isArray(v)) {
+                              if (v.length === 0) return <span className="text-stone-400 italic">None</span>;
+                              if (typeof v[0] === "object") {
+                                return (
+                                  <div className="space-y-2 mt-1">
+                                    {v.map((item, i) => (
+                                      <div key={i} className="bg-stone-50 rounded-lg p-2 border border-stone-100">
+                                        {Object.entries(item).map(([ik, iv]) => (
+                                          <div key={ik} className="flex gap-2 text-[10px]">
+                                            <span className="font-bold text-stone-400 uppercase w-20 flex-shrink-0">{ik}</span>
+                                            <span className="text-stone-600">{typeof iv === "object" ? JSON.stringify(iv) : String(iv)}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }
+                              return <span className="text-stone-700 leading-relaxed">{v.join(" · ")}</span>;
+                            }
+                            if (typeof v === "object" && v !== null) {
+                              return (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1">
+                                  {Object.entries(v).map(([nk, nv]) => (
+                                    <div key={nk} className="bg-stone-50 rounded-lg p-2 border border-stone-100">
+                                      <p className="text-[8px] font-black text-stone-400 uppercase mb-1">{nk.replace(/([A-Z])/g, " $1")}</p>
+                                      <p className="text-stone-700">{Array.isArray(nv) ? nv.join(", ") : String(nv)}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }
+                            return <span className="text-stone-700 leading-relaxed">{String(v)}</span>;
+                          };
+
+                          return (
+                            <div key={key} className="border-t border-stone-100 pt-3 first:border-0 first:pt-0">
+                              <p className="font-black text-stone-400 uppercase text-[9px] tracking-wider mb-1">
+                                {key.replace(/([A-Z])/g, " $1").trim()}
+                              </p>
+                              <div className="text-stone-700">{renderVal(val)}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
