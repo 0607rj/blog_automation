@@ -1,16 +1,9 @@
 /**
- * ACCOUNTING DOMAIN PERSONA TEMPLATE LIBRARY
- * 3 deep, hyper-detailed psychological audience profiles
- * focused exclusively on the Accounting/Finance education domain.
- * 
- * Each persona follows a 12-section architecture for maximum psychological depth.
- * Language: Proper English (No Hinglish).
+ 
  */
 
 const PERSONA_TEMPLATES = [
-  // ═══════════════════════════════════════════════════════════════
-  // 1. 12TH PASS COMMERCE STUDENT
-  // ═══════════════════════════════════════════════════════════════
+ 
   {
     id: "12th-pass-commerce",
     label: "12th Pass Commerce Student",
@@ -121,9 +114,7 @@ const PERSONA_TEMPLATES = [
     }
   },
 
-  // ═══════════════════════════════════════════════════════════════
-  // 2. COLLEGE-LEVEL STUDENT (B.Com / BBA / BA)
-  // ═══════════════════════════════════════════════════════════════
+  
   {
     id: "college-commerce-student",
     label: "College-Level Commerce Student",

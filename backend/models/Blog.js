@@ -115,8 +115,60 @@ const blogSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    slug: {
+      type: String,
+      unique: true,
+      trim: true,
+      sparse: true,
+    },
+    excerpt: {
+      type: String,
+      default: "",
+    },
+    featuredImage: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: false }
 );
+
+blogSchema.pre("save", async function (next) {
+  try {
+    if (!this.slug && this.title) {
+      let baseSlug = this.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      if (!baseSlug) {
+        baseSlug = "post";
+      }
+
+      let slug = baseSlug;
+      let counter = 1;
+      const Blog = this.constructor;
+
+      while (true) {
+        const existing = await Blog.findOne({ slug, _id: { $ne: this._id } });
+        if (!existing) {
+          break;
+        }
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      this.slug = slug;
+    }
+    if (!this.excerpt) {
+      this.excerpt = this.summary || "";
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = mongoose.model("Blog", blogSchema);

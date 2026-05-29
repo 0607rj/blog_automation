@@ -22,25 +22,70 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+    
+    // Check if origin is localhost or 127.0.0.1 (any port)
+    const isLocalhost = origin.startsWith("http://localhost:") || 
+                        origin === "http://localhost" ||
+                        origin.startsWith("http://127.0.0.1:") ||
+                        origin === "http://127.0.0.1";
+                        
+    if (isLocalhost || allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
     }
-    return callback(null, true);
+    
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true
 }));
 
-
-
 app.use(express.json());
 
+// ─── DB Migration Script for Slugs/Excerpts ──────────────────────────────────
+const runMigrations = async () => {
+  const Blog = require("./models/Blog");
+  try {
+    const blogsToMigrate = await Blog.find({
+      $or: [
+        { slug: { $exists: false } },
+        { slug: "" },
+        { excerpt: { $exists: false } },
+        { excerpt: "" }
+      ]
+    });
+
+    if (blogsToMigrate.length > 0) {
+      console.log(`🔄 DB Migration: Found ${blogsToMigrate.length} blogs missing slug or excerpt. Migrating...`);
+      let migratedCount = 0;
+      for (const blog of blogsToMigrate) {
+        let updated = false;
+        if (!blog.slug || blog.slug === "") {
+          blog.slug = undefined; // Force pre-save hook to generate the slug
+          updated = true;
+        }
+        if (!blog.excerpt || blog.excerpt === "") {
+          updated = true;
+        }
+        if (updated) {
+          await blog.save();
+          migratedCount++;
+        }
+      }
+      console.log(`✅ DB Migration: Successfully updated ${migratedCount} blogs.`);
+    } else {
+      console.log("✅ DB Migration: No pending migrations (all blogs have slugs and excerpts).");
+    }
+  } catch (err) {
+    console.error("❌ DB Migration: Failed to migrate existing blogs:", err);
+  }
+};
 
 // ─── Connect to MongoDB ───────────────────────────────────────────────────────
-connectDB();
+connectDB().then(() => {
+  runMigrations();
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api", blogRoutes);
