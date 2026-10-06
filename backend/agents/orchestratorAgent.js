@@ -107,7 +107,7 @@ CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
     raw = await groqGenerate(
       `You are a strategic content brain for accounting education targeting ${targetLocation}. You combine psychology, research, competitor gaps, and memory into a precise content blueprint. Every decision must be data-driven and psychologically grounded. Focus exclusively on accounting, finance, GST, Tally, taxation, and commerce career content. Always include location-specific context.`,
       prompt,
-      { model: "llama-3.3-70b-versatile", temperature: 0.7 }
+      { temperature: 0.7 }
     );
   } catch (err) {
     console.error("Orchestrator Agent — Groq generation failed:", err.message);
@@ -155,7 +155,8 @@ function extractBlock(text, start, end) {
 
 function extractField(block, key) {
   const match = block.match(new RegExp(`${key}:\\s*(.+)`, "i"));
-  return match ? match[1].trim() : "";
+  // Strip markdown emphasis/quotes the model may wrap values in (e.g. **BLOG_TITLE:** *"..."*)
+  return match ? match[1].replace(/^[\s*_"“”]+|[\s*_"“”]+$/g, "").trim() : "";
 }
 
 function extractList(block, key) {

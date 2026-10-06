@@ -29,14 +29,14 @@ const MODEL_CONFIG = {
     temperature: 0.6
   },
   groq: {
-    model: "llama-3.1-8b-instant",
+    model: "openai/gpt-oss-120b",
     provider: "groq",
     apiKeyEnv: "GROQ_API_KEY",
     maxTokens: 4000,
     temperature: 0.7
   },
   groqLightweight: {
-    model: "llama-3.1-8b-instant",
+    model: "openai/gpt-oss-120b",
     provider: "groq",
     apiKeyEnv: "GROQ_API_KEY",
     maxTokens: 2000,

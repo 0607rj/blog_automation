@@ -83,7 +83,7 @@ A: (concise 2-3 sentence answer)
     raw = await groqGenerate(
       "You are a master content writer for the Indian accounting education market. Your content feels like a warm, knowledgeable mentor speaking directly to the reader's deepest insecurities and ambitions about their accounting career. Every paragraph drives emotional transformation. Use accounting-specific examples (GST, Tally, balance sheets, audit, taxation).",
       prompt,
-      { model: "llama-3.3-70b-versatile", temperature: 0.7, maxTokens: 4000 }
+      { temperature: 0.7, maxTokens: 4000 }
     );
   } catch (err) {
     console.error("Blog Generator Agent — Groq generation failed:", err.message);

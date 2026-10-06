@@ -87,7 +87,7 @@ Respond EXACTLY in JSON:
         rawFeedback = await groqGenerate(
           "You are a harsh editorial reviewer for accounting education content. You expect psychological depth, practical value, and emotional resonance. Output valid JSON only.",
           prompt,
-          { model: "llama-3.3-70b-versatile", temperature: 0.1 }
+          { temperature: 0.1 }
         );
       } catch (err) {
         console.error("Validation Agent — Groq generation failed:", err.message);
