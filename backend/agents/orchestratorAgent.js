@@ -1,4 +1,4 @@
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 
 /**
  * Orchestrator Agent — STEP 4 of the autonomous pipeline. The Central Brain.
@@ -104,13 +104,13 @@ CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
 
   let raw = "";
   try {
-    raw = await groqGenerate(
+    raw = await grokGenerate(
       `You are a strategic content brain for accounting education targeting ${targetLocation}. You combine psychology, research, competitor gaps, and memory into a precise content blueprint. Every decision must be data-driven and psychologically grounded. Focus exclusively on accounting, finance, GST, Tally, taxation, and commerce career content. Always include location-specific context.`,
       prompt,
       { temperature: 0.7 }
     );
   } catch (err) {
-    console.error("Orchestrator Agent — Groq generation failed:", err.message);
+    console.error("Orchestrator Agent — Grok generation failed:", err.message);
     return fallbackResult;
   }
   const block = extractBlock(raw, "[BEGIN_BLUEPRINT]", "[END_BLUEPRINT]");
@@ -136,7 +136,7 @@ CONTENT_DIRECTION: (1-2 sentences on overall content strategy and reasoning)
     methodology: {
       approach: "Multi-Intelligence Synthesis Engine",
       inputs: ["Deep Persona Psychology", "Dual-Model Research", "7-Framework Competitor Analysis", "Self-Learning Memory", "Location Intelligence"],
-      reasoning: `Synthesized ${domainResult.audienceCategory} persona insights with research data, competitor gaps, and localized context. Avoided ${(memory.previousTitles || []).length} previously generated titles using Llama 3.3 Intelligence.`,
+      reasoning: `Synthesized ${domainResult.audienceCategory} persona insights with research data, competitor gaps, and localized context. Avoided ${(memory.previousTitles || []).length} previously generated titles using xAI Grok.`,
       decisions: {
         emotionalAngle: extractField(block, "EMOTIONAL_ANGLE"),
         rankingApproach: extractField(block, "POSITIONING_STRATEGY"),

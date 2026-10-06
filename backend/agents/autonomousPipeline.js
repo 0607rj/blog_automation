@@ -4,12 +4,12 @@
  * 
  * AGENT ORDER:
  * 1. Opportunity Analysis Agent (select audience + location)
- * 2. Persona Intelligence Agent (Groq)
- * 3. Research Agent (Groq)
- * 4. Competitor Agent (Groq)
- * 5. Orchestrator Agent (Groq)
- * 6. Content Generation Agent (Groq)
- * 7. Validation Agent (Groq)
+ * 2. Persona Intelligence Agent (xAI Grok)
+ * 3. Research Agent (xAI Grok)
+ * 4. Competitor Agent (xAI Grok)
+ * 5. Orchestrator Agent (xAI Grok)
+ * 6. Content Generation Agent (xAI Grok)
+ * 7. Validation Agent (xAI Grok)
  * 8. MongoDB Storage
  * 9. Memory Update + Frontend Auto Update
  */
@@ -74,7 +74,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("opportunity", "running", {
       message: "Analyzing market opportunities across 3 audience categories...",
-      methodology: "Groq Opportunity Intelligence (Llama 3.3 70B)"
+      methodology: "Grok Opportunity Intelligence (xAI Grok)"
     });
     pipelineRun.currentStep = "opportunity";
 
@@ -160,7 +160,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("persona", "running", {
       message: `Enriching ${selectedCategory} persona with psychological context...`,
-      methodology: "Psychological Persona Enrichment (Groq Llama 3.3)"
+      methodology: "Psychological Persona Enrichment (xAI Grok)"
     });
     pipelineRun.currentStep = "persona";
 
@@ -182,7 +182,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("research", "running", {
       message: `Performing behavioral and analytical research for ${selectedCategory}...`,
-      methodology: "Unified Research Intelligence (Groq Llama 3.3)"
+      methodology: "Unified Research Intelligence (xAI Grok)"
     });
     pipelineRun.currentStep = "research";
 
@@ -206,7 +206,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("competitor", "running", {
       message: "Analyzing competitor gaps and blind spots...",
-      methodology: "Competitive Intelligence (Groq Llama 3.3)"
+      methodology: "Competitive Intelligence (xAI Grok)"
     });
     pipelineRun.currentStep = "competitor";
 
@@ -246,7 +246,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("orchestrator", "running", {
       message: "Central brain synthesizing all intelligence...",
-      methodology: "Multi-Intelligence Synthesis (Groq Llama 3.3)"
+      methodology: "Multi-Intelligence Synthesis (xAI Grok)"
     });
     pipelineRun.currentStep = "orchestrator";
 
@@ -261,7 +261,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("generator", "running", {
       message: `Writing psychology-driven content (Location privacy active)...`,
-      methodology: "Persona-Driven Content Synthesis (Groq Llama 3.3)"
+      methodology: "Persona-Driven Content Synthesis (xAI Grok)"
     });
     pipelineRun.currentStep = "generator";
 
@@ -274,7 +274,7 @@ async function runAutonomousPipeline(options = {}) {
     // ══════════════════════════════════════════════════════════════
     sendStep("validation", "running", {
       message: "Running 7-dimension quality validation...",
-      methodology: "Multi-Dimension Quality Assessment (Groq Llama 3.3)"
+      methodology: "Multi-Dimension Quality Assessment (xAI Grok)"
     });
     pipelineRun.currentStep = "validation";
 

@@ -99,7 +99,7 @@ app.get("/", (req, res) => {
     system: "Production-Level Autonomous AI SEO Content Intelligence",
     features: [
       "Autonomous 15-day content generation",
-      "Multi-model AI Intelligence (Powered by Groq)",
+      "AI Intelligence (Powered by xAI Grok)",
       "Location intelligence (Kolkata, Lucknow)",
       "9 hardcoded competitor analysis",
       "7-dimension validation",

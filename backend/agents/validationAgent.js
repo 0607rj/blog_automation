@@ -1,4 +1,4 @@
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 
 /**
  * Validation Agent — STEP 9 of the pipeline.
@@ -84,13 +84,13 @@ Respond EXACTLY in JSON:
 
       let rawFeedback = "";
       try {
-        rawFeedback = await groqGenerate(
+        rawFeedback = await grokGenerate(
           "You are a harsh editorial reviewer for accounting education content. You expect psychological depth, practical value, and emotional resonance. Output valid JSON only.",
           prompt,
           { temperature: 0.1 }
         );
       } catch (err) {
-        console.error("Validation Agent — Groq generation failed:", err.message);
+        console.error("Validation Agent — Grok generation failed:", err.message);
         throw new Error("Validation generation failed.");
       }
 

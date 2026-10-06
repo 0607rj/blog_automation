@@ -15,7 +15,7 @@
  * 6. Location-Specific Demand (Kolkata/Lucknow specific)
  * 7. Previous Success Patterns (from memory)
  */
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 const { getPrimaryLocationContext } = require("../config/locations");
 const { getCompetitorContext } = require("../config/competitors");
 const { memoryAgent } = require("./memoryAgent");
@@ -99,9 +99,9 @@ SEO_GAPS: (3 SEO keyword gaps, comma-separated)
 
   let geminiAnalysis = "";
   try {
-    geminiAnalysis = await groqGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7 });
+    geminiAnalysis = await grokGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.7 });
   } catch (err) {
-    console.error("Opportunity Agent — Groq Analysis failed:", err.message);
+    console.error("Opportunity Agent — Grok Analysis failed:", err.message);
     geminiAnalysis = "Analysis unavailable.";
   }
 
@@ -174,17 +174,17 @@ Respond in EXACT JSON format:
 
   let scoringResult;
   try {
-    const rawScoring = await groqGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.3 });
+    const rawScoring = await grokGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.3 });
 
     // Extract JSON from response (may contain <think> tags)
     const jsonMatch = rawScoring.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       scoringResult = JSON.parse(jsonMatch[0]);
     } else {
-      throw new Error("No valid JSON found in Groq response");
+      throw new Error("No valid JSON found in Grok response");
     }
   } catch (err) {
-    console.error("Opportunity Agent — Groq scoring failed:", err.message);
+    console.error("Opportunity Agent — Grok scoring failed:", err.message);
     // Fallback: rotate through categories based on blog count
     const blogCount = memoryData.totalBlogsGenerated || 0;
     const fallbackIndex = blogCount % AUDIENCE_CATEGORIES.length;
@@ -250,13 +250,13 @@ Respond in EXACT JSON format:
     seoGaps: scoringResult.seoGaps || [],
     geminiAnalysis: geminiAnalysis.substring(0, 500),
     methodology: {
-      approach: "Groq Opportunity Intelligence",
-      models: ["Groq (Llama 3.3 70B)"],
+      approach: "Grok Opportunity Intelligence",
+      models: ["xAI Grok"],
       scoringDimensions: [
         "Search Demand", "Emotional Intensity", "Competitor Gaps",
         "SEO Opportunity", "Trend Growth", "Location Demand", "Previous Success"
       ],
-      reasoning: `Analyzed 3 audience categories across 7 scoring dimensions using strictly Groq Intelligence (Llama 3.3) for both qualitative and quantitative scoring. Selected "${scoringResult.selectedCategory}" based on highest potential market intent.`
+      reasoning: `Analyzed 3 audience categories across 7 scoring dimensions using strictly xAI Grok for both qualitative and quantitative scoring. Selected "${scoringResult.selectedCategory}" based on highest potential market intent.`
     }
   };
 }

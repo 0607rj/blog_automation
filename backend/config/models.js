@@ -6,9 +6,9 @@
  * - Persona Agent: Gemini
  * - Research Agent: Gemini + DeepSeek R1 (via OpenRouter)
  * - Competitor Agent: DeepSeek R1 (via OpenRouter)
- * - Content Generation Agent: Groq (existing)
- * - Validation Agent: Groq (existing, lightweight)
- * - Orchestrator Agent: Groq (existing)
+ * - Content Generation Agent: xAI Grok
+ * - Validation Agent: xAI Grok, lightweight
+ * - Orchestrator Agent: xAI Grok
  * - Opportunity Agent: Gemini + DeepSeek R1
  */
 
@@ -28,17 +28,17 @@ const MODEL_CONFIG = {
     maxTokens: 4096,
     temperature: 0.6
   },
-  groq: {
-    model: "openai/gpt-oss-120b",
-    provider: "groq",
-    apiKeyEnv: "GROQ_API_KEY",
+  grok: {
+    model: "grok-4.20-0309-non-reasoning",
+    provider: "xai",
+    apiKeyEnv: "XAI_API_KEY",
     maxTokens: 4000,
     temperature: 0.7
   },
-  groqLightweight: {
-    model: "openai/gpt-oss-120b",
-    provider: "groq",
-    apiKeyEnv: "GROQ_API_KEY",
+  grokLightweight: {
+    model: "grok-4.20-0309-non-reasoning",
+    provider: "xai",
+    apiKeyEnv: "XAI_API_KEY",
     maxTokens: 2000,
     temperature: 0.3
   }
@@ -49,9 +49,9 @@ const AGENT_MODEL_MAP = {
   researchAgent_broad: "gemini",
   researchAgent_analytical: "deepseek",
   competitorAgent: "deepseek",
-  orchestratorAgent: "groq",
-  contentGenerationAgent: "groq",
-  validationAgent: "groqLightweight",
+  orchestratorAgent: "grok",
+  contentGenerationAgent: "grok",
+  validationAgent: "grokLightweight",
   opportunityAgent_broad: "gemini",
   opportunityAgent_analytical: "deepseek"
 };

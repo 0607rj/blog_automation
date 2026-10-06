@@ -1,7 +1,7 @@
 /**
  * Persona Agent — STEP 3 of the autonomous pipeline.
  * 
- * Uses: Gemini (Primary), Groq (Fallback)
+ * Uses: xAI Grok
  * 
  * Enriches static persona templates with:
  * - Location intelligence (Kolkata/Lucknow)
@@ -9,7 +9,7 @@
  * - Competitor messaging context
  * - Deep psychological pain points
  */
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 
 async function personaAgent(templates, businessContext, locationContext = {}) {
   const targetLocation = locationContext.city || businessContext.targetLocation || "Kolkata";
@@ -52,9 +52,9 @@ EMOTIONAL_TRIGGERS: (8 specific hooks that trigger them to take action, semicolo
 
   let result = "";
   try {
-    result = await groqGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
+    result = await grokGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
   } catch (err) {
-    console.error("Persona Agent — Groq generation failed:", err.message);
+    console.error("Persona Agent — Grok generation failed:", err.message);
     result = "";
   }
 
@@ -78,7 +78,7 @@ EMOTIONAL_TRIGGERS: (8 specific hooks that trigger them to take action, semicolo
     buyingBehavior: baseTemplate.buyingBehavior || {},
     methodology: {
       approach: "Psychological Persona Enrichment",
-      model: "Groq (Llama 3.3 70B)",
+      model: "xAI Grok",
       reasoning: `Enriched the base template with deep localized context for ${targetLocation}. Focused on the emotional toll of their ${baseTemplate.painArchitecture?.hiddenFears?.length || 0} pain points to create a "living" profile that drives high-conversion content.`
     }
   };

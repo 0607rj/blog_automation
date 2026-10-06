@@ -1,7 +1,7 @@
 /**
  * Competitor Analysis Agent — STEP 3 of the autonomous pipeline.
  * 
- * Uses: DeepSeek R1 via OpenRouter (Primary), Groq (Fallback)
+ * Uses: xAI Grok
  * 
  * Analyzes hardcoded primary competitors for:
  * - SWOT Analysis
@@ -9,7 +9,7 @@
  * - Trust Gap Analysis
  * - SEO Gap Analysis
  */
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 const { PRIMARY_COMPETITORS, getCompetitorContext } = require("../config/competitors");
 
 async function competitorAgent(competitorWebsites, personaProfile, researchData) {
@@ -64,9 +64,9 @@ CONTENT_OPPORTUNITIES: (6 content topics competitors ignore, comma-separated)
 
   let result = "";
   try {
-    result = await groqGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
+    result = await grokGenerate(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 4000 });
   } catch (err) {
-    console.error("Competitor Agent — Groq generation failed:", err.message);
+    console.error("Competitor Agent — Grok generation failed:", err.message);
     return buildFallbackCompetitorAnalysis(personaProfile);
   }
 
@@ -95,11 +95,11 @@ CONTENT_OPPORTUNITIES: (6 content topics competitors ignore, comma-separated)
     methodology: {
       principlesUsed: ["SWOT Analysis", "Emotional Gap Analysis", "Trust Gap Analysis", "SEO Gap Analysis", "Positioning Analysis", "Messaging Weakness Analysis"],
       models: {
-        primary: "Groq (Llama 3.3 70B)",
-        fallback: "Groq (Llama 3.3 70B)"
+        primary: "xAI Grok",
+        fallback: "xAI Grok"
       },
       competitorsAnalyzed: PRIMARY_COMPETITORS.map(c => c.name),
-      approach: "7-framework professional competitive intelligence powered by Groq.",
+      approach: "7-framework professional competitive intelligence powered by xAI Grok.",
       reasoning: `Analyzed ${PRIMARY_COMPETITORS.length} hardcoded competitors. Used analytical reasoning to find messaging weaknesses and emotional gaps they miss.`
     }
   };

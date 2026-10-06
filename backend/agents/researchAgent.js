@@ -5,9 +5,9 @@
  * 
  * Gemini: Broad contextual understanding, emotional search intent, search intent aggregation
  * DeepSeek R1: Analytical reasoning, structured insights, contextual gap analysis
- * Groq: Fallback intelligence
+ * xAI Grok: research intelligence
  */
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 const { getLocationByCity } = require("../config/locations");
 
 async function researchAgent(personaProfile, businessContext, locationContext = {}) {
@@ -61,9 +61,9 @@ EMOTIONAL_TRANSFORMATION_PSYCHOLOGY: (5-6 sentences on the deep emotional transf
 
   let geminiResult = "";
   try {
-    geminiResult = await groqGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.8, maxTokens: 4000 });
+    geminiResult = await grokGenerate(geminiSystemPrompt, geminiUserPrompt, { temperature: 0.8, maxTokens: 4000 });
   } catch (err) {
-    console.error("Research Agent — Groq Phase 1 failed:", err.message);
+    console.error("Research Agent — Grok Phase 1 failed:", err.message);
     geminiResult = "";
   }
 
@@ -97,9 +97,9 @@ BEHAVIORAL_PATTERNS: (3 platform-specific behaviors, comma-separated)
 
   let deepseekResult = "";
   try {
-    deepseekResult = await groqGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.5 });
+    deepseekResult = await grokGenerate(deepseekSystemPrompt, deepseekUserPrompt, { temperature: 0.5 });
   } catch (err) {
-    console.error("Research Agent — Groq Phase 2 failed:", err.message);
+    console.error("Research Agent — Grok Phase 2 failed:", err.message);
     deepseekResult = "";
   }
 
@@ -133,10 +133,10 @@ BEHAVIORAL_PATTERNS: (3 platform-specific behaviors, comma-separated)
       principlesUsed: ["Search Intent Mapping", "Emotional Pattern Analysis", "Trend Detection", "Context Aggregation", "SEO Opportunity Analysis", "Source Reliability Filtering", "Location-based Search Analysis", "Career Anxiety Analysis"],
       dataSources: ["Google Search", "YouTube", "LinkedIn", "Reddit", "Accounting Forums", "Career Discussions"],
       models: {
-        primary: "Groq (Llama 3.3 70B)",
-        fallback: "Groq (Llama 3.3 70B)"
+        primary: "xAI Grok",
+        fallback: "xAI Grok"
       },
-      approach: "Research intelligence powered by Groq.",
+      approach: "Research intelligence powered by xAI Grok.",
       reasoning: "Research focused on deep persona pain points and localized anxieties. Analysis exploits gaps competitors miss by addressing the emotional core of commerce career searches."
     }
   };

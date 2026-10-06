@@ -1,4 +1,4 @@
-const { groqGenerate } = require("./clients/groqClient");
+const { grokGenerate } = require("./clients/grokClient");
 
 /**
  * Content Generation Agent — STEP 8 of the pipeline.
@@ -80,13 +80,13 @@ A: (concise 2-3 sentence answer)
 
   let raw = "";
   try {
-    raw = await groqGenerate(
+    raw = await grokGenerate(
       "You are a master content writer for the Indian accounting education market. Your content feels like a warm, knowledgeable mentor speaking directly to the reader's deepest insecurities and ambitions about their accounting career. Every paragraph drives emotional transformation. Use accounting-specific examples (GST, Tally, balance sheets, audit, taxation).",
       prompt,
       { temperature: 0.7, maxTokens: 4000 }
     );
   } catch (err) {
-    console.error("Blog Generator Agent — Groq generation failed:", err.message);
+    console.error("Blog Generator Agent — Grok generation failed:", err.message);
     throw new Error("Content generation failed: " + err.message);
   }
 
