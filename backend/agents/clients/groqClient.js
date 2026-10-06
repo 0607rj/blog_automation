@@ -1,10 +1,17 @@
 const Groq = require("groq-sdk");
 
-// Initialize Groq client with API key from environment
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-  maxRetries: 5 // free tier is 8k tokens/min; wait out 429s instead of failing the step
-});
+// Groq client is created lazily: the SDK throws at construction when
+// GROQ_API_KEY is missing, which would crash startup on Grok-only deploys.
+let _groq = null;
+function getGroqClient() {
+  if (!_groq) {
+    _groq = new Groq({
+      apiKey: process.env.GROQ_API_KEY,
+      maxRetries: 5 // free tier is 8k tokens/min; wait out 429s instead of failing the step
+    });
+  }
+  return _groq;
+}
 
 /**
  * LLM CLIENT
@@ -28,8 +35,12 @@ async function groqGenerate(systemPrompt, userPrompt, options = {}) {
     }
   }
 
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error("No LLM API key configured: set XAI_API_KEY or GROQ_API_KEY.");
+  }
+
   try {
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: options.model || process.env.GROQ_MODEL || "openai/gpt-oss-120b",
       messages,
       temperature,
